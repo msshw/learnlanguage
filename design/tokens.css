@@ -1,0 +1,47 @@
+/* Vocab design tokens. Light by default, dark follows the system setting. */
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT@9..144,400..700,50&display=swap");
+
+:root {
+  --surface:#fbf7f1; --surface-raised:#ffffff; --surface-sunken:#f3ece2;
+  --ink:#2b2420; --ink-muted:#6a6058; --border:#e8dfd2; --border-strong:#928473;
+  --primary:#2d6e5d; --on-primary:#ffffff; --primary-soft:#e1f0ea; --on-primary-soft:#1f5246;
+  --focus:#2f62a3;
+  --der:#2f62a3; --der-soft:#e4edf8; --die:#b03a52; --die-soft:#f8e3e7; --das:#8a5d0a; --das-soft:#f6ecd6;
+  --shadow-card:0 1px 2px rgba(43,36,32,0.05), 0 8px 24px rgba(43,36,32,0.06);
+  --shadow-press:0 1px 0 rgba(43,36,32,0.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+  --surface:#1b1916; --surface-raised:#24211d; --surface-sunken:#141210;
+  --ink:#f2ece4; --ink-muted:#aba196; --border:#36312b; --border-strong:#7d7366;
+  --primary:#7fcdb6; --on-primary:#0f2a22; --primary-soft:#21362f; --on-primary-soft:#a9e0cf;
+  --focus:#94b8ec;
+  --der:#94b8ec; --der-soft:#23304a; --die:#f1909f; --die-soft:#3d2329; --das:#e2b65e; --das-soft:#3a2f18;
+  --shadow-card:0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
+  --shadow-press:0 1px 0 rgba(0,0,0,0.5);
+  }
+}
+:root {
+  --rate-again:var(--die); --rate-again-soft:var(--die-soft);
+  --rate-hard:var(--das); --rate-hard-soft:var(--das-soft);
+  --rate-good:var(--primary); --rate-good-soft:var(--primary-soft);
+  --rate-easy:var(--der); --rate-easy-soft:var(--der-soft);
+  --font-display:"Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-sans:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:20px; --radius-pill:999px;
+}
+
+/* App shell: sidebar layout and Review focus mode */
+.app { min-height: 800px; display: flex; flex-wrap: wrap; background: var(--surface); color: var(--ink); font-family: var(--font-sans); }
+.app-main { flex: 999 1 560px; min-width: 0; padding: var(--space-12) var(--space-8); box-sizing: border-box; }
+.app-inner { max-width: 880px; margin: 0 auto; display: grid; gap: var(--space-8); }
+.app .v-sidebar { flex: 1 1 232px; max-width: 232px; min-height: 800px; }
+.page-title { margin: 0; font: 600 30px/36px var(--font-display); font-variation-settings: "SOFT" 50, "opsz" 36; }
+.focus { min-height: 800px; background: var(--surface); color: var(--ink); font-family: var(--font-sans); display: grid; grid-template-rows: auto 1fr auto; }
+.focus-top { display: flex; align-items: center; gap: var(--space-6); padding: var(--space-6) var(--space-8); }
+.focus-top .v-progress { flex: 1; }
+.focus-body { display: grid; justify-items: center; align-content: start; padding: var(--space-12) var(--space-6) 0; }
+.focus-body > * { width: 100%; max-width: 560px; }
+.focus-foot { display: flex; justify-content: center; gap: var(--space-6); padding: var(--space-6); color: var(--ink-muted); font-size: 13px; flex-wrap: wrap; }
+@media (max-width: 720px) { .app .v-sidebar { max-width: none; min-height: 0; flex-direction: row; flex-wrap: wrap; } .app-main { padding: var(--space-6) var(--space-4); } }

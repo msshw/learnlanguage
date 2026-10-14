@@ -1,0 +1,54 @@
+{{#> admin-base title="Reports"}}
+<section id="load-error" hidden class="v-card grid gap-4 p-8">
+    <p class="v-error">Could not load the reports.</p>
+    <div><button id="retry" type="button" class="v-btn v-btn--secondary">Retry</button></div>
+  </section>
+
+  <section id="empty" hidden class="v-card grid gap-2 p-8">
+    <p>No open reports</p>
+  </section>
+
+  <div id="entries" class="grid gap-4"></div>
+<template id="entry-template">
+  <article class="v-card grid gap-4 p-6">
+    <header class="grid gap-1">
+      <h2 class="entry-term word-term"></h2>
+      <p class="entry-meta v-hint"></p>
+    </header>
+    <ul class="entry-reasons grid gap-1"></ul>
+    <div class="entry-senses grid gap-2"></div>
+    <p role="alert" hidden class="entry-error v-error"></p>
+    <p role="status" hidden class="entry-closed v-hint">Reports closed</p>
+    <div class="entry-actions flex flex-wrap gap-3">
+      <button type="button" class="entry-remove v-btn v-btn--secondary">Remove suggestion</button>
+    </div>
+  </article>
+</template>
+<template id="entry-sense-template">
+  <div class="v-sense grid gap-2">
+    <span class="v-sense__trans"></span>
+    <span class="sense-meta v-hint flex flex-wrap items-center gap-2"></span>
+    <span class="v-sense__ex"></span>
+    <span class="sense-state v-hint"></span>
+    <div class="sense-actions flex flex-wrap gap-3">
+      <button type="button" class="sense-approve v-btn v-btn--ghost">Approve as is</button>
+      <button type="button" class="sense-edit v-btn v-btn--ghost">Edit and approve</button>
+      <button type="button" class="sense-reject v-btn v-btn--ghost">Reject</button>
+    </div>
+    <div class="sense-edit-slot"></div>
+  </div>
+</template>
+<template id="edit-template">
+  <form class="edit-form grid gap-4" novalidate>
+    {{> word-form}}
+    <div class="flex flex-wrap gap-3">
+      <button type="submit" class="v-btn v-btn--primary">Save sense</button>
+      <button type="button" class="edit-cancel v-btn v-btn--ghost">Cancel</button>
+    </div>
+  </form>
+</template>
+
+<script type="module">
+  import '../js/pages/admin.js';
+</script>
+{{/admin-base}}

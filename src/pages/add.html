@@ -1,0 +1,79 @@
+{{#> base title="Add word" narrow=true}}
+<h1 class="page-title">Add word</h1>
+
+<p id="saved" role="status" hidden class="v-feedback v-feedback--good">Word saved</p>
+
+<form id="term-form" class="grid gap-2" novalidate>
+  <label for="term-input" class="v-label">German word or phrase</label>
+  <div class="flex items-center gap-3">
+    <input id="term-input" type="text" autocomplete="off" autofocus class="v-input min-w-0 flex-1" />
+    <button type="submit" aria-keyshortcuts="Enter" class="v-btn v-btn--secondary shrink-0">
+      Suggest <span class="v-key" aria-hidden="true">Enter</span>
+    </button>
+  </div>
+  <p id="term-error" role="alert" hidden class="v-error"></p>
+</form>
+
+<section id="duplicate" hidden class="v-card grid gap-4 p-6">
+  <p>This word already exists.</p>
+  <div class="flex flex-wrap gap-3">
+    <a id="open-word" href="/words.html" class="v-btn v-btn--secondary">Open word</a>
+    <button id="add-anyway" type="button" class="v-btn v-btn--ghost">Add anyway</button>
+  </div>
+</section>
+
+<section id="suggesting" hidden class="grid gap-3">
+  <p role="status" class="v-hint">Looking up suggestions</p>
+  <div><button id="skip-suggestions" type="button" class="v-btn v-btn--ghost">Skip suggestions</button></div>
+</section>
+
+<section id="senses" hidden class="grid gap-3">
+  <p id="senses-label" class="v-hint">Pick a meaning. Press 1 to 3, or Enter for the first.</p>
+  <div id="sense-list" role="radiogroup" aria-labelledby="senses-label" class="grid gap-2"></div>
+  <div class="flex flex-wrap items-center gap-3">
+    <button id="manual-instead" type="button" class="v-btn v-btn--ghost">Enter manually</button>
+    <button id="report" type="button" hidden class="v-btn v-btn--ghost">Report suggestion</button>
+    <p id="report-done" role="status" hidden class="v-hint">Suggestion reported</p>
+  </div>
+  <form id="report-form" hidden class="grid gap-2" novalidate>
+    <label for="report-reason" class="v-label">What is wrong with this suggestion?</label>
+    <textarea id="report-reason" rows="3" maxlength="2000" class="v-input"></textarea>
+    <div class="flex flex-wrap items-center gap-3">
+      <button id="report-send" type="submit" disabled class="v-btn v-btn--secondary">Send report</button>
+      <span id="report-count" class="v-hint"></span>
+    </div>
+  </form>
+  <p id="report-error" role="alert" hidden class="v-error">Could not report the suggestion</p>
+</section>
+<template id="sense-template">
+  <button type="button" role="radio" aria-checked="false" class="v-sense">
+    <span class="v-key v-sense__num" aria-hidden="true"></span>
+    <span class="v-sense__trans"></span>
+    <span class="sense-meta v-hint flex flex-wrap items-center gap-2"></span>
+    <span class="v-sense__ex"></span>
+  </button>
+</template>
+
+<section id="not-a-word" hidden class="v-card grid gap-4 p-6">
+  <p>Not recognized as German</p>
+  <div class="flex flex-wrap gap-3">
+    <button id="save-manually" type="button" class="v-btn v-btn--secondary">Save manually anyway</button>
+    <button id="not-a-word-back" type="button" class="v-btn v-btn--ghost">Change word</button>
+  </div>
+</section>
+
+<p id="notice" role="status" hidden class="v-hint"></p>
+
+<form id="word-form" hidden class="v-card grid gap-6 p-6" novalidate>
+  {{> word-form}}
+  <div class="flex flex-wrap gap-3">
+    <button type="submit" aria-keyshortcuts="Enter" class="v-btn v-btn--primary">
+      Save word <span class="v-key" aria-hidden="true">Enter</span>
+    </button>
+    <button id="cancel" type="button" class="v-btn v-btn--ghost">Cancel</button>
+  </div>
+</form>
+<script type="module">
+  import '../js/pages/add.js';
+</script>
+{{/base}}

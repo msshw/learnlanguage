@@ -1,0 +1,32 @@
+{
+  "name": "vocab-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:proxy": "VITE_SUPABASE_URL=http://localhost:5173/supabase vite --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview",
+    "supabase:functions": "supabase functions serve --env-file supabase/functions/.env",
+    "supabase:reset": "supabase db reset",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test:ai": "node --env-file=.env scripts/autofill-quality.mjs",
+    "backfill:rejected": "node --env-file=.env scripts/backfill-rejected-senses.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.0",
+    "ts-fsrs": "^5.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "@tailwindcss/vite": "^4.1.0",
+    "supabase": "^2.120.0",
+    "tailwindcss": "^4.1.0",
+    "vite": "^7.0.0",
+    "vite-plugin-handlebars": "^2.0.0",
+    "vitest": "^3.2.0"
+  }
+}

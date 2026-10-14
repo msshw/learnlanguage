@@ -1,0 +1,31 @@
+{{#> base title="Sign in" public=true nosidebar=true}}
+<main class="mx-auto grid w-full max-w-[400px] gap-6 px-4 py-16">
+  <div class="v-brand v-brand--lg justify-center"><span class="v-brand-mark">V</span>Vocab</div>
+  <form id="signin-form" class="v-card grid gap-6 p-8" novalidate>
+    <div class="grid gap-2">
+      <h1 class="page-title">Welcome back</h1>
+      <p class="v-hint">Sign in to continue learning.</p>
+    </div>
+    <div class="v-field">
+      <label for="email" class="v-label">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required class="v-input" />
+    </div>
+    <div class="v-field">
+      <label for="password" class="v-label">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required class="v-input" />
+    </div>
+    <div id="signin-error" role="alert" hidden class="v-feedback v-feedback--again">
+      <p class="v-feedback__title"></p>
+      <p class="v-feedback__body"></p>
+    </div>
+    <button type="submit" class="v-btn v-btn--primary v-btn--lg w-full justify-center">Sign in</button>
+    <div class="grid gap-2 text-center">
+      <a id="forgot" href="#" class="v-hint underline">Forgot your password?</a>
+      <p id="forgot-status" role="status" hidden class="v-hint"></p>
+    </div>
+  </form>
+</main>
+<script type="module">
+  import '../js/pages/signin.js';
+</script>
+{{/base}}

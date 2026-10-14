@@ -1,0 +1,21 @@
+<div id="table" class="grid gap-4">
+  <section class="table-error v-card grid gap-4 p-8" hidden>
+    <p class="v-error">Could not load this section.</p>
+    <div><button type="button" class="table-retry v-btn v-btn--secondary">Retry</button></div>
+  </section>
+  <section class="table-empty v-card grid gap-2 p-8" hidden>
+    <p class="table-empty-text"></p>
+  </section>
+  <div class="table-body grid gap-4" hidden>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead><tr class="table-head"></tr></thead>
+        <tbody class="table-rows"></tbody>
+      </table>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <button type="button" class="table-prev v-btn v-btn--secondary">Previous</button>
+      <button type="button" class="table-next v-btn v-btn--secondary">Next</button>
+    </div>
+  </div>
+</div>

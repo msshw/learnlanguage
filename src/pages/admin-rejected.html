@@ -1,0 +1,25 @@
+{{#> admin-base title="Rejected"}}
+<section id="rejected-load-error" hidden class="v-card grid gap-4 p-8">
+    <p class="v-error">Could not load the rejected senses.</p>
+    <div><button id="rejected-retry" type="button" class="v-btn v-btn--secondary">Retry</button></div>
+  </section>
+
+  <section id="rejected-empty" hidden class="v-card grid gap-2 p-8">
+    <p>No rejected senses</p>
+  </section>
+
+  <div id="rejected-entries" class="grid gap-4"></div>
+<template id="rejected-template">
+  <article class="v-card grid gap-2 p-6">
+    <h2 class="rejected-term word-term"></h2>
+    <p class="rejected-meta v-hint"></p>
+    <p class="rejected-trans"></p>
+    <p role="alert" hidden class="rejected-error v-error"></p>
+    <div><button type="button" class="rejected-allow v-btn v-btn--secondary">Allow again</button></div>
+  </article>
+</template>
+
+<script type="module">
+  import '../js/pages/admin-rejected.js';
+</script>
+{{/admin-base}}

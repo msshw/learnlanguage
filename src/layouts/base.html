@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{title}} - Vocab</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="theme-color" content="#fbf7f1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1b1916" media="(prefers-color-scheme: dark)" />
+    <script type="module">
+      import '../styles/main.css';
+      import { installErrorBar } from '../js/lib/error-bar.js';
+      import { registerWorker } from '../js/lib/pwa.js';
+      installErrorBar();
+      registerWorker();
+    </script>
+    {{#unless nosidebar}}
+    <script type="module">
+      import { installShortcut } from '../js/lib/shortcut.js';
+      import { installSidebarToggle, fillSidebar } from '../js/lib/sidebar.js';
+      installShortcut();
+      installSidebarToggle();
+      fillSidebar();
+    </script>
+    {{/unless}}
+  </head>
+  <body class="v-root" {{#unless public}}hidden{{/unless}}>
+    {{#if nosidebar}}
+    {{> @partial-block}}
+    {{else}}
+    <div class="app">
+      {{> sidebar}}
+      <main class="app-main">
+        <div class="app-inner{{#if narrow}} app-inner--narrow{{/if}}">
+          {{> @partial-block}}
+        </div>
+      </main>
+    </div>
+    {{/if}}
+  </body>
+</html>

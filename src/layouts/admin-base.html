@@ -1,0 +1,14 @@
+{{#> base title=title}}
+<h1 class="page-title">{{title}}</h1>
+<div class="admin-layout">
+  {{> admin-nav}}
+  <div class="admin-content grid gap-4">
+    <section id="forbidden" hidden class="v-card grid gap-2 p-8">
+      <p>Not available</p>
+    </section>
+    <div id="admin-body" class="grid gap-4">
+      {{> @partial-block}}
+    </div>
+  </div>
+</div>
+{{/base}}

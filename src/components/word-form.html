@@ -1,0 +1,90 @@
+<div class="space-y-4">
+  <label class="v-field">
+    <span class="v-label">Term (without article)</span>
+    <input name="term" type="text" autocomplete="off" class="v-input" />
+    <p data-error-for="term" class="v-error" hidden></p>
+  </label>
+
+  <label class="v-field">
+    <span class="v-label">Part of speech</span>
+    <select name="part_of_speech" class="v-input">
+      <option value="noun">noun</option>
+      <option value="verb">verb</option>
+      <option value="adjective">adjective</option>
+      <option value="adverb">adverb</option>
+      <option value="phrase">phrase</option>
+      <option value="other">other</option>
+    </select>
+    <p data-error-for="part_of_speech" class="v-error" hidden></p>
+  </label>
+
+  <label class="v-field">
+    <span class="v-label">Translations (separate with commas)</span>
+    <input name="translations" type="text" autocomplete="off" class="v-input" />
+    <p data-error-for="translations" class="v-error" hidden></p>
+  </label>
+
+  <fieldset data-pos="noun" class="space-y-4">
+    <label class="v-field">
+      <span class="v-label">Article</span>
+      <select name="article" class="v-input">
+        <option value="">choose</option>
+        <option value="der">der</option>
+        <option value="die">die</option>
+        <option value="das">das</option>
+      </select>
+      <p data-error-for="article" class="v-error" hidden></p>
+    </label>
+    <label class="v-field">
+      <span class="v-label">Plural (optional)</span>
+      <input name="plural" type="text" autocomplete="off" class="v-input" />
+    </label>
+  </fieldset>
+
+  <fieldset data-pos="verb" class="space-y-4">
+    <label class="v-field">
+      <span class="v-label">Präteritum, 3rd person singular (optional)</span>
+      <input name="praeteritum" type="text" autocomplete="off" class="v-input" />
+    </label>
+    <label class="v-field">
+      <span class="v-label">Partizip II (optional)</span>
+      <input name="partizip2" type="text" autocomplete="off" class="v-input" />
+    </label>
+    <label class="v-field">
+      <span class="v-label">Auxiliary (optional)</span>
+      <select name="auxiliary" class="v-input">
+        <option value="">choose</option>
+        <option value="haben">haben</option>
+        <option value="sein">sein</option>
+      </select>
+      <p data-error-for="auxiliary" class="v-error" hidden></p>
+    </label>
+    <label class="v-field">
+      <span class="v-label">Separable prefix (optional)</span>
+      <input name="separable_prefix" type="text" autocomplete="off" class="v-input" />
+    </label>
+  </fieldset>
+
+  <label class="v-field">
+    <span class="v-label">Hint for English to German prompts (optional)</span>
+    <input name="hint_en" type="text" autocomplete="off" class="v-input" />
+  </label>
+  <label class="v-field">
+    <span class="v-label">Example sentence in German (optional)</span>
+    <input name="example_de" type="text" autocomplete="off" class="v-input" />
+  </label>
+  <label class="v-field">
+    <span class="v-label">Example sentence in English (optional)</span>
+    <input name="example_en" type="text" autocomplete="off" class="v-input" />
+  </label>
+  <label class="v-field">
+    <span class="v-label">Notes (optional)</span>
+    <textarea name="notes" rows="2" class="v-input"></textarea>
+  </label>
+  <label class="v-field">
+    <span class="v-label">Tags, separate with commas (optional)</span>
+    <input name="tags" type="text" autocomplete="off" class="v-input" />
+  </label>
+
+  <p data-error-for="form" role="alert" class="v-error" hidden></p>
+</div>

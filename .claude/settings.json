@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm run test:unit)",
+      "Bash(npm run test:e2e)",
+      "Bash(npm run test:e2e -- *)",
+      "Bash(npm run build)",
+      "Bash(npm run supabase:reset)",
+      "Bash(npm run supabase:functions)",
+      "Bash(npx vitest *)",
+      "Bash(npx playwright test *)",
+      "Bash(npx supabase status)",
+      "Bash(npx supabase start)",
+      "Bash(npx supabase db reset)",
+      "Bash(npx supabase functions serve *)",
+      "Bash(npx supabase stop)",
+      "Bash(openspec validate *)",
+      "Bash(openspec list *)",
+      "Bash(openspec status *)",
+      "Bash(curl http://127.0.0.1:54321/*)",
+      "Bash(curl -s http://127.0.0.1:54321/*)",
+      "Bash(curl -s -w * http://127.0.0.1:54321/*)",
+      "Bash(curl -s -X POST http://127.0.0.1:54321/*)",
+      "Bash(curl -s -w * -X POST http://127.0.0.1:54321/*)",
+      "Bash(supabase status)",
+      "Bash(supabase start)",
+      "Bash(supabase db reset)",
+      "Bash(supabase functions serve *)",
+      "Bash(supabase stop)"
+    ]
+  }
+}

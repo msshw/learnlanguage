@@ -1,0 +1,77 @@
+{{#> base title="Words"}}
+<div class="flex flex-wrap items-center justify-between gap-4">
+  <h1 class="page-title">Words <span id="word-total" class="page-title__count"></span></h1>
+  <a href="/add.html" aria-keyshortcuts="N" class="v-btn v-btn--primary">
+    Add word <span class="v-key" aria-hidden="true">N</span>
+  </a>
+</div>
+
+<section id="load-error" hidden class="v-card grid gap-4 p-8">
+  <p class="v-error">Could not load your words.</p>
+  <div><button id="retry" type="button" class="v-btn v-btn--secondary">Retry</button></div>
+</section>
+
+<section id="empty" hidden class="v-card grid gap-2 p-8">
+  <h2 class="page-title">No words yet</h2>
+  <p class="v-hint">Add your first German word to start reviewing.</p>
+</section>
+
+<section id="list" hidden class="grid gap-6">
+  <label>
+    <span class="sr-only">Search words</span>
+    <input id="search" type="search" autocomplete="off" placeholder="Search words" class="v-input" />
+  </label>
+  <p id="no-results" hidden class="v-hint">No results</p>
+  <div id="table" class="v-card overflow-x-auto">
+    <table class="v-table">
+      <thead>
+        <tr>
+          <th scope="col">Word</th>
+          <th scope="col">Translations</th>
+          <th scope="col">Next due</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</section>
+
+<template id="row-template">
+  <tr>
+    <td data-cell="word"><a class="v-word"></a></td>
+    <td data-cell="translations"></td>
+    <td data-cell="due" class="v-due whitespace-nowrap"></td>
+    <td class="text-right">
+      <button type="button" data-action="edit" class="v-btn v-btn--ghost v-btn--sm">Edit</button>
+    </td>
+  </tr>
+</template>
+
+<dialog id="edit-dialog" aria-labelledby="edit-title">
+  <h2 id="edit-title" class="page-title">Edit word</h2>
+  <form id="edit-form" class="mt-6 grid gap-6" novalidate>
+    {{> word-form}}
+    <div id="edit-actions" class="flex flex-wrap items-center gap-3">
+      <button type="submit" aria-keyshortcuts="Enter" class="v-btn v-btn--primary">
+        Save changes <span class="v-key" aria-hidden="true">Enter</span>
+      </button>
+      <button id="edit-cancel" type="button" class="v-btn v-btn--ghost">Cancel</button>
+      <button id="delete" type="button" class="v-btn v-btn--danger ml-auto">Delete</button>
+    </div>
+    <div id="delete-step" hidden class="v-feedback v-feedback--again">
+      <p class="v-feedback__title">Delete this word?</p>
+      <p class="v-feedback__body">It leaves your word list and your reviews.</p>
+      <p id="delete-error" role="alert" hidden class="v-error"></p>
+      <div class="mt-2 flex flex-wrap gap-3">
+        <button id="delete-confirm" type="button" class="v-btn v-btn--danger">Delete word</button>
+        <button id="delete-cancel" type="button" class="v-btn v-btn--ghost">Keep word</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
+  import '../js/pages/words.js';
+</script>
+{{/base}}

@@ -1,0 +1,99 @@
+@import "../../design/tokens.css";
+@import "../../design/components.css";
+@import "tailwindcss";
+
+/* Vite root is src/pages, so point Tailwind at all of src for class detection. */
+@source "../";
+
+/* Larger brand above the Sign in and Setup cards. */
+.v-brand--lg { font-size: 28px; padding-bottom: 0; }
+.v-brand--lg .v-brand-mark { width: 40px; height: 40px; font-size: 22px; }
+
+/* .v-input is sized for one line; let multi-line fields grow. */
+textarea.v-input { height: auto; padding-block: var(--space-3); }
+
+/* Review pieces components.css has no class for: the typed answer and the summary stat tiles. */
+.review-typed { font: 500 20px/28px var(--font-sans); color: var(--ink-muted); overflow-wrap: anywhere; }
+.review-stat { display: grid; gap: var(--space-1); padding: var(--space-4); border-radius: var(--radius-md); background: var(--surface-sunken); }
+.review-stat__num { font: 600 30px/36px var(--font-display); font-variation-settings: "SOFT" 50; }
+
+/* Add word and Settings use the narrower column. */
+.app-inner--narrow { max-width: 640px; }
+
+/* Muted count after a page title ("Words 12"). */
+.page-title__count { color: var(--ink-muted); }
+
+/* Home: the due count in display type. */
+.home-due__num { font: 500 64px/1 var(--font-display); font-variation-settings: "SOFT" 50, "opsz" 72; letter-spacing: -.01em; }
+
+/* Settings: label and hint on the left, control on the right. */
+.settings-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3) var(--space-6); padding: var(--space-4) var(--space-6); }
+.settings-row + .settings-row { border-top: 1px solid var(--border); }
+
+/* The Words edit view. */
+dialog { margin: auto; width: calc(100% - 2 * var(--space-4)); max-width: 560px; box-sizing: border-box; padding: var(--space-8); background: var(--surface-raised); color: var(--ink); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+dialog::backdrop { background: color-mix(in srgb, var(--ink) 30%, transparent); }
+
+/* Full-height shell. Replaces: html/body had no reset; .app and .focus min-height: 800px in design/tokens.css. */
+html, body { margin: 0; min-height: 100%; width: 100%; }
+.app { min-height: 100vh; min-height: 100dvh; }
+.focus { min-height: 100vh; min-height: 100dvh; }
+
+/* Sidebar row: icon, label (the chip is a hover tooltip, see below). Replaces: .v-nav justify-content: space-between in design/components.css. */
+.v-nav { gap: var(--space-3); }
+.v-nav[hidden] { display: none; }
+.v-nav .nav-icon { flex: none; }
+.v-nav .nav-label { flex: 1; }
+button.v-nav { border: 0; background: none; cursor: pointer; width: 100%; }
+.sidebar-toggle { margin-top: auto; }
+.v-sidebar.is-collapsed .sidebar-toggle .nav-icon { transform: rotate(180deg); }
+
+@media (min-width: 721px) {
+  /* Replaces: .app .v-sidebar min-height: 800px in design/tokens.css. */
+  .app .v-sidebar { position: sticky; top: 0; height: 100vh; height: 100dvh; min-height: 0; z-index: 10; }
+  /* Shortcut tooltip: the chip is hidden until hover or keyboard focus, then shows to the right of the link, outside the sidebar.
+     Replaces: the inline .v-key chip. The sidebar must not clip it, so the old overflow-y: auto is gone (five links fit). */
+  .v-sidebar { --tip-offset: var(--space-3); }
+  .v-sidebar.is-collapsed { --tip-offset: var(--space-2); }
+  .v-sidebar .v-nav { position: relative; }
+  .v-sidebar .v-nav .v-key { display: none; position: absolute; left: calc(100% + var(--tip-offset) + var(--space-2)); top: 50%; transform: translateY(-50%); height: auto; min-height: 28px; padding: 0 var(--space-3); background: var(--surface-raised); box-shadow: var(--shadow-press); white-space: nowrap; pointer-events: none; }
+  .v-sidebar .v-nav:hover .v-key,
+  .v-sidebar .v-nav:focus-visible .v-key { display: inline-flex; gap: var(--space-2); }
+  /* Collapsed links show icons only, so the tooltip leads with the label. */
+  .v-sidebar.is-collapsed .v-nav:hover .v-key::before,
+  .v-sidebar.is-collapsed .v-nav:focus-visible .v-key::before { content: attr(data-label); color: var(--ink); }
+  /* Collapsed: 64px column of icons. Labels stay in the DOM as accessible names. */
+  .app .v-sidebar.is-collapsed { flex-basis: 64px; width: 64px; max-width: 64px; padding-inline: var(--space-2); }
+  .v-sidebar.is-collapsed .v-brand { padding-inline: 0; justify-content: center; }
+  .v-sidebar.is-collapsed .v-brand-text { display: none; }
+  .v-sidebar.is-collapsed .v-nav { position: relative; justify-content: center; padding: 0; }
+  .v-sidebar.is-collapsed .nav-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; flex: none; }
+  .v-sidebar.is-collapsed .v-count { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px; font-size: 10px; line-height: 16px; }
+}
+@media (max-width: 720px) {
+  .sidebar-toggle, .v-sidebar .v-key { display: none; }
+}
+
+/* Words rows open the word page; the word is a link that looks like the old plain word. */
+a.v-word { color: inherit; text-decoration: none; }
+a.v-word:hover { text-decoration: underline; }
+#rows tr { cursor: pointer; }
+
+/* Word page: the term in display type, labelled sections below. */
+.word-term { font: 500 36px/44px var(--font-display); font-variation-settings: "SOFT" 50; display: flex; align-items: baseline; gap: var(--space-3); overflow-wrap: anywhere; }
+
+/* Practice: an issue span in the user's sentence. */
+.practice-sentence { font: 500 20px/32px var(--font-sans); overflow-wrap: anywhere; white-space: pre-wrap; }
+.practice-sentence mark { background: var(--rate-hard-soft); color: inherit; border-bottom: 2px solid var(--rate-hard); border-radius: 2px; padding: 0 2px; }
+
+/* Admin: the second sidebar, always expanded. A column beside the content on wide screens, a strip above it on narrow ones. */
+.admin-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-6); }
+.admin-nav { display: flex; flex-direction: column; gap: 2px; flex: 0 0 180px; padding-block: var(--space-1); }
+.admin-nav[hidden] { display: none; }
+.admin-nav .v-nav { gap: var(--space-3); }
+.admin-content { flex: 1 1 0; min-width: 0; }
+.app-inner:has(> .admin-layout) { max-width: none; margin: 0; width: 100%; }
+@media (max-width: 720px) {
+  .admin-nav { flex: 1 1 100%; flex-direction: row; flex-wrap: wrap; }
+  .admin-content { flex-basis: 100%; }
+}

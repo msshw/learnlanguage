@@ -1,0 +1,8 @@
+<nav id="admin-nav" aria-label="Admin" class="admin-nav" hidden>
+  {{#each adminNav}}
+  <a href="{{href}}" {{#if current}}aria-current="page"{{/if}} class="v-nav">
+    <span class="nav-label">{{label}}</span>
+    {{#if pill}}<span id="nav-reports" class="v-count" hidden></span>{{/if}}
+  </a>
+  {{/each}}
+</nav>

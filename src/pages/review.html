@@ -1,0 +1,106 @@
+{{#> base title="Review" nosidebar=true}}
+<div class="focus">
+  <header id="focus-top" hidden class="focus-top">
+    <button id="end" type="button" aria-keyshortcuts="Escape" class="v-btn v-btn--ghost">
+      End session <span class="v-key" aria-hidden="true">Esc</span>
+    </button>
+    <div class="v-progress" aria-hidden="true"><span id="progress-bar"></span></div>
+    <p id="progress" class="v-hint whitespace-nowrap"></p>
+  </header>
+
+  <main class="focus-body gap-6">
+    <p id="banner" role="status" hidden class="v-feedback v-feedback--hard">
+      Some answers are not saved yet. They will be retried.
+    </p>
+
+    <section id="view-error" hidden class="v-card grid gap-4 p-8">
+      <p class="v-error">Could not load your cards.</p>
+      <div class="flex flex-wrap gap-3">
+        <button id="retry" type="button" class="v-btn v-btn--secondary">Retry</button>
+        <a href="/" class="v-btn v-btn--ghost">Back home</a>
+      </div>
+    </section>
+
+    <section id="view-empty" hidden class="v-card grid gap-6 p-8">
+      <div class="grid gap-2">
+        <h2 class="page-title">Nothing due</h2>
+        <p id="empty-next" class="v-hint"></p>
+      </div>
+      <div><a id="empty-home" href="/" class="v-btn v-btn--primary">Back home</a></div>
+    </section>
+
+    <section id="view-card" hidden class="v-card v-review">
+      <div class="grid gap-2">
+        <p id="direction" class="v-review__dir"></p>
+        <h1 id="prompt" class="v-review__word break-words"></h1>
+        <p id="meta" class="v-review__meta"></p>
+      </div>
+
+      <form id="answer-form" class="grid gap-4" autocomplete="off">
+        <label>
+          <span class="sr-only">Your answer</span>
+          <input id="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" class="v-input v-input--answer" />
+        </label>
+        <button id="check" type="submit" aria-keyshortcuts="Enter" class="v-btn v-btn--primary v-btn--lg justify-center">
+          Check answer <span class="v-key" aria-hidden="true">Enter</span>
+        </button>
+      </form>
+
+      <div id="feedback" hidden tabindex="-1" class="grid gap-6 outline-none">
+        <p id="typed" class="review-typed"></p>
+        <div id="verdict" class="v-feedback">
+          <p id="result" class="v-feedback__title"></p>
+          <div id="extras" class="v-feedback__body grid gap-1"></div>
+        </div>
+        <div id="ratings" role="group" aria-label="Rating" class="v-rating">
+          <button type="button" data-rating="1" aria-pressed="false" aria-keyshortcuts="1" class="v-rate v-rate--again">
+            <span class="v-key" aria-hidden="true">1</span><span>Again</span><small></small>
+          </button>
+          <button type="button" data-rating="2" aria-pressed="false" aria-keyshortcuts="2" class="v-rate v-rate--hard">
+            <span class="v-key" aria-hidden="true">2</span><span>Hard</span><small></small>
+          </button>
+          <button type="button" data-rating="3" aria-pressed="false" aria-keyshortcuts="3" class="v-rate v-rate--good">
+            <span class="v-key" aria-hidden="true">3</span><span>Good</span><small></small>
+          </button>
+          <button type="button" data-rating="4" aria-pressed="false" aria-keyshortcuts="4" class="v-rate v-rate--easy">
+            <span class="v-key" aria-hidden="true">4</span><span>Easy</span><small></small>
+          </button>
+        </div>
+        <button id="continue" type="button" aria-keyshortcuts="Enter" class="v-btn v-btn--primary v-btn--lg justify-center">
+          Next card <span class="v-key" aria-hidden="true">Enter</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="view-summary" hidden class="v-card grid gap-6 p-8">
+      <div class="grid gap-2">
+        <h2 class="page-title">All done for today!</h2>
+        <p id="sum-next" class="v-hint"></p>
+      </div>
+      <dl class="grid grid-cols-3 gap-3">
+        <div class="review-stat"><dt class="v-hint">Reviewed</dt><dd id="sum-reviewed" class="review-stat__num"></dd></div>
+        <div class="review-stat"><dt class="v-hint">Remembered</dt><dd id="sum-remembered" class="review-stat__num"></dd></div>
+        <div class="review-stat"><dt class="v-hint">To watch</dt><dd id="sum-watch" class="review-stat__num"></dd></div>
+      </dl>
+      <section id="watch" hidden class="grid gap-3">
+        <h3 class="v-label">Words to watch</h3>
+        <ul id="watch-list" class="grid gap-2"></ul>
+      </section>
+      <div class="flex flex-wrap gap-3">
+        <a id="summary-home" href="/" class="v-btn v-btn--primary">Back home</a>
+        <a href="/add.html" class="v-btn v-btn--secondary">Add word</a>
+      </div>
+    </section>
+  </main>
+
+  <footer id="focus-foot" hidden class="focus-foot">
+    <span id="hint-check" class="inline-flex items-center gap-2"><span class="v-key">Enter</span> Check answer</span>
+    <span id="hint-rate" hidden class="inline-flex items-center gap-2"><span class="v-key">1</span> to <span class="v-key">4</span> Change rating</span>
+    <span id="hint-next" hidden class="inline-flex items-center gap-2"><span class="v-key">Enter</span> Next card</span>
+    <span class="inline-flex items-center gap-2"><span class="v-key">Esc</span> End session</span>
+  </footer>
+</div>
+<script type="module">
+  import '../js/pages/review.js';
+</script>
+{{/base}}
