@@ -1,13 +1,13 @@
-{{#> base title="Home"}}
+{{#> base title="Home" titleKey="title.home"}}
 <h1 id="greeting" class="page-title">Home</h1>
 
-<p id="banner" role="status" hidden class="v-feedback v-feedback--hard">
+<p id="banner" role="status" hidden class="v-feedback v-feedback--hard" data-i18n="common.pendingBanner">
   Some answers are not saved yet. They will be retried.
 </p>
 
 <section id="home-error" hidden class="v-card grid gap-4 p-8">
-  <p class="v-error">Could not load your words.</p>
-  <div><button id="retry" type="button" class="v-btn v-btn--secondary">Retry</button></div>
+  <p class="v-error" data-i18n="common.loadWordsError">Could not load your words.</p>
+  <div><button id="retry" type="button" class="v-btn v-btn--secondary" data-i18n="common.retry">Retry</button></div>
 </section>
 
 <section id="home-card" hidden class="v-card grid gap-6 p-8">
@@ -18,37 +18,37 @@
   </div>
 
   <div id="home-empty" hidden class="grid gap-2">
-    <h2 class="page-title">No words yet</h2>
-    <p class="v-hint">Add your first German word to start reviewing.</p>
+    <h2 class="page-title" data-i18n="common.emptyTitle">No words yet</h2>
+    <p id="empty-hint" class="v-hint">Add your first word to start reviewing.</p>
   </div>
 
   <div id="home-nothing" hidden class="grid gap-2">
-    <h2 class="page-title">Nothing due</h2>
+    <h2 class="page-title" data-i18n="home.nothingDue">Nothing due</h2>
     <p id="nothing-next" class="v-hint"></p>
   </div>
 
   <div id="home-done" hidden class="grid gap-2">
-    <h2 class="page-title">All done for today</h2>
+    <h2 class="page-title" data-i18n="home.allDone">All done for today</h2>
     <p id="done-next" class="v-hint"></p>
   </div>
 
   <div class="flex flex-wrap gap-3">
     <button id="start-review" type="button" hidden aria-keyshortcuts="Enter" class="v-btn v-btn--primary v-btn--lg">
-      Start review <span class="v-key" aria-hidden="true">Enter</span>
+      <span data-i18n="home.startReview">Start review</span> <span class="v-key" aria-hidden="true">Enter</span>
     </button>
     <a id="add-word" href="/add.html" aria-keyshortcuts="N" class="v-btn v-btn--lg">
-      Add word <span class="v-key" aria-hidden="true">N</span>
+      <span data-i18n="common.addWord">Add word</span> <span class="v-key" aria-hidden="true">N</span>
     </a>
   </div>
 </section>
 
 <dl id="home-stats" hidden class="grid grid-cols-2 gap-4">
   <div class="v-card grid gap-1 p-6">
-    <dt class="v-hint">Words in vocabulary</dt>
+    <dt class="v-hint" data-i18n="home.wordsInVocabulary">Words in vocabulary</dt>
     <dd id="word-count" class="review-stat__num"></dd>
   </div>
   <div class="v-card grid gap-1 p-6">
-    <dt class="v-hint">New words today</dt>
+    <dt class="v-hint" data-i18n="home.newToday">New words today</dt>
     <dd id="new-today" class="review-stat__num"></dd>
   </div>
 </dl>

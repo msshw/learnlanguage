@@ -97,3 +97,20 @@ a.v-word:hover { text-decoration: underline; }
   .admin-nav { flex: 1 1 100%; flex-direction: row; flex-wrap: wrap; }
   .admin-content { flex-basis: 100%; }
 }
+
+/* Pair switcher at the top of the sidebar. */
+.pair-switcher { position: relative; padding-bottom: var(--space-2); }
+.pair-switcher[hidden], .pair-menu[hidden] { display: none; }
+.pair-button, .pair-item { display: flex; align-items: center; gap: var(--space-3); width: 100%; padding: var(--space-2) var(--space-3); border: 0; border-radius: var(--radius-md); background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.pair-button:hover, .pair-item:hover { background: var(--surface-raised); }
+.pair-text { display: grid; min-width: 0; }
+.pair-name { font-weight: 600; }
+.pair-code { display: none; font-weight: 600; }
+.pair-item .v-count { margin-left: auto; }
+.pair-menu { position: absolute; z-index: 20; top: 100%; left: 0; right: 0; min-width: 220px; padding: var(--space-2); }
+.pair-menu a { color: inherit; text-decoration: underline; }
+@media (min-width: 721px) {
+  .v-sidebar.is-collapsed .pair-button { justify-content: center; padding-inline: 0; }
+  .v-sidebar.is-collapsed .pair-text { display: none; }
+  .v-sidebar.is-collapsed .pair-code { display: inline; }
+}

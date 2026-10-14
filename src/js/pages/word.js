@@ -1,9 +1,13 @@
 import { requireSetup } from '../lib/auth.js';
 import { getWord } from '../lib/db.js';
 import { articleBadge } from '../lib/word-form-view.js';
+import { posLabel } from '../lib/i18n.js';
+import { profileOf } from '../lib/languages.js';
+import { lang } from '../lib/ui-lang.js';
 import { isWordId, wordLabel } from '../lib/word-list.js';
 
-await requireSetup();
+const profile = await requireSetup();
+const langProfile = profileOf(profile.pair.target_lang);
 
 const $ = (selector) => document.querySelector(selector);
 const loadError = $('#load-error');
@@ -15,19 +19,19 @@ document.addEventListener('keydown', (event) => {
 });
 
 function show(word) {
-  const badge = articleBadge(word);
+  const badge = articleBadge(word, langProfile);
   $('#term').replaceChildren(...(badge ? [badge, ' '] : []), word.term);
   document.title = `${wordLabel(word)} - Vocab`;
-  $('#hint').textContent = word.hint_en ?? '';
-  $('#hint').hidden = !word.hint_en;
-  $('#pos').textContent = word.part_of_speech;
+  $('#hint').textContent = word.hint_native ?? '';
+  $('#hint').hidden = !word.hint_native;
+  $('#pos').textContent = posLabel(lang, word.part_of_speech);
   $('#translations').textContent = word.translations.join(', ');
   $('#translations-section').hidden = word.translations.length === 0;
-  $('#example-de').textContent = word.example_de ?? '';
-  $('#example-de').hidden = !word.example_de;
-  $('#example-en').textContent = word.example_en ?? '';
-  $('#example-en').hidden = !word.example_en;
-  $('#examples-section').hidden = !word.example_de && !word.example_en;
+  $('#example-target').textContent = word.example_target ?? '';
+  $('#example-target').hidden = !word.example_target;
+  $('#example-native').textContent = word.example_native ?? '';
+  $('#example-native').hidden = !word.example_native;
+  $('#examples-section').hidden = !word.example_target && !word.example_native;
   article.hidden = false;
 }
 
@@ -38,6 +42,7 @@ async function load() {
   if (isWordId(id)) {
     try {
       word = await getWord(id);
+      if (word && word.pair_id !== profile.pair.id) word = null; // another of the user's pairs
     } catch {
       loadError.hidden = false;
       return;

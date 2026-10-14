@@ -84,3 +84,15 @@ describe('greeting', () => {
     expect(greeting(new Date('2026-10-12T16:00:00Z'), tz, null)).toBe('Good evening');
   });
 });
+
+describe('Russian', () => {
+  const now = new Date('2026-10-11T09:00:00Z');
+  it('uses Russian plural forms and texts', () => {
+    const after = (h) => new Date(now.getTime() + h * 3600e3);
+    expect(formatInterval(after(1), now, 'ru')).toBe('1 час');
+    expect(formatInterval(after(2), now, 'ru')).toBe('2 часа');
+    expect(formatInterval(after(5), now, 'ru')).toBe('5 часов');
+    expect(formatRelativeDay(new Date('2026-10-16T09:00:00Z'), new Date('2026-10-12T07:00:00Z'), tz, 'ru')).toBe('Через 4 дня');
+    expect(greeting(new Date('2026-10-12T16:00:00Z'), tz, 'Макс', 'ru')).toBe('Добрый вечер, Макс');
+  });
+});

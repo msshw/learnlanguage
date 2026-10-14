@@ -29,9 +29,9 @@ async function callWithTimeout(body, invoke, timeoutMs) {
 
 // Returns { status, senses, suggestionId, confirmed } (the last two only on ok) with status ok, not_a_word or unavailable. Never throws:
 // timeout, network, HTTP error, error, over_cap and malformed bodies are all "unavailable".
-export async function suggest(term, { invoke = defaultInvoke, timeoutMs = 8000 } = {}) {
+export async function suggest(term, pairId, { invoke = defaultInvoke, timeoutMs = 8000 } = {}) {
   try {
-    const data = await callWithTimeout({ term, target_lang: 'de', native_lang: 'en' }, invoke, timeoutMs);
+    const data = await callWithTimeout({ term, pair_id: pairId }, invoke, timeoutMs);
     if (data?.status === 'ok' && Array.isArray(data.senses) && data.senses.length > 0) {
       return {
         status: 'ok',

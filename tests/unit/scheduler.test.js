@@ -88,7 +88,7 @@ describe('schedule', () => {
 
 describe('fsrsFields', () => {
   it('keeps only the FSRS fields', () => {
-    const row = { ...newCard(), id: 'x', word_id: 'y', user_id: 'z', direction: 'de_en' };
+    const row = { ...newCard(), id: 'x', word_id: 'y', user_id: 'z', direction: 'forward' };
     expect(fsrsFields(row)).toEqual(newCard());
   });
 });

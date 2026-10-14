@@ -125,7 +125,7 @@ const alicePayload = () => ({
 
 const patch = {
   profiles: { timezone: 'UTC' },
-  language_pairs: { native_lang: 'xx' },
+  language_pairs: { new_words_per_day: 3 },
   words: { notes: 'hijacked' },
   cards: { reps: 99 },
   review_logs: { typed_answer: 'hijacked' },
@@ -304,7 +304,6 @@ describe('profiles', () => {
 
   it('new users get a profile with defaults', async () => {
     const { data } = await admin.from('profiles').select('*').eq('id', alice.id).single();
-    expect(data.new_words_per_day).toBe(10);
     expect(data.timezone).toBe('Europe/Berlin');
   });
 });
@@ -324,7 +323,7 @@ describe('profiles.is_admin', () => {
   });
 
   it('bob cannot promote himself together with an allowed field', async () => {
-    const { error } = await bob.c.from('profiles').update({ is_admin: true, new_words_per_day: 7 }).eq('id', bob.id);
+    const { error } = await bob.c.from('profiles').update({ is_admin: true, timezone: 'UTC' }).eq('id', bob.id);
     expect(error).not.toBeNull();
     expect(await flag(bob.id)).toBe(false);
   });
@@ -334,11 +333,11 @@ describe('profiles.is_admin', () => {
     expect(await flag(alice.id)).toBe(false);
   });
 
-  it('bob can still change his new words per day', async () => {
-    const { data, error } = await bob.c.from('profiles').update({ new_words_per_day: 12 }).eq('id', bob.id).select();
+  it('bob can still change his timezone', async () => {
+    const { data, error } = await bob.c.from('profiles').update({ timezone: 'Europe/Paris' }).eq('id', bob.id).select();
     expect(error).toBeNull();
     expect(data).toHaveLength(1);
-    await bob.c.from('profiles').update({ new_words_per_day: 10 }).eq('id', bob.id);
+    await bob.c.from('profiles').update({ timezone: 'Europe/Berlin' }).eq('id', bob.id);
   });
 
   it('the service role can set and clear it', async () => {

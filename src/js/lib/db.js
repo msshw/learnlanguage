@@ -19,32 +19,49 @@ async function currentUserId() {
 
 // profile and language pairs
 
+// The profile with its active pair embedded as `pair` (null before setup).
 export async function getProfile() {
   const id = await currentUserId();
-  return unwrap(await supabase.from('profiles').select('*').eq('id', id).single());
+  const row = unwrap(
+    await supabase.from('profiles').select('*, pair:language_pairs!active_pair_id(*)').eq('id', id).single(),
+  );
+  return { ...row, pair: row.pair ?? null };
 }
 
-// Upsert on the unique key, so a retry after a half failure converges.
-export async function createActivePair(targetLang, nativeLang) {
+export async function listPairs() {
+  return unwrap(await supabase.from('language_pairs').select('*').order('created_at'));
+}
+
+// Insert ignoring a duplicate, read the pair by its languages, make it active. Safe to repeat.
+export async function createPair(targetLang, nativeLang) {
   const userId = await currentUserId();
+  const { error } = await supabase
+    .from('language_pairs')
+    .upsert(
+      { user_id: userId, target_lang: targetLang, native_lang: nativeLang },
+      { onConflict: 'user_id,target_lang,native_lang', ignoreDuplicates: true },
+    );
+  if (error) throw error;
   const pair = unwrap(
     await supabase
       .from('language_pairs')
-      .upsert(
-        { user_id: userId, target_lang: targetLang, native_lang: nativeLang },
-        { onConflict: 'user_id,target_lang,native_lang' },
-      )
-      .select()
+      .select('*')
+      .eq('target_lang', targetLang)
+      .eq('native_lang', nativeLang)
       .single(),
   );
-  unwrap(await supabase.from('profiles').update({ active_pair_id: pair.id }).eq('id', userId).select().single());
+  await setActivePair(pair.id);
   return pair;
 }
 
-export async function updateProfileLimit(limit) {
-  const id = await currentUserId();
+export async function setActivePair(id) {
+  const userId = await currentUserId();
+  unwrap(await supabase.from('profiles').update({ active_pair_id: id }).eq('id', userId).select().single());
+}
+
+export async function updatePairLimit(pairId, limit) {
   return unwrap(
-    await supabase.from('profiles').update({ new_words_per_day: limit }).eq('id', id).select().single(),
+    await supabase.from('language_pairs').update({ new_words_per_day: limit }).eq('id', pairId).select().single(),
   );
 }
 
@@ -132,11 +149,12 @@ export async function listQueueCards(pairId) {
 }
 
 // Answers given since `start`, with the card direction (needed even if the word was deleted since).
-export async function listLogsSince(start) {
+export async function listLogsSince(start, pairId) {
   return fetchAll(() =>
     supabase
       .from('review_logs')
-      .select('card_id, reviewed_at, state_before, cards(direction)')
+      .select('card_id, reviewed_at, state_before, cards!inner(direction, words!inner(pair_id))')
+      .eq('cards.words.pair_id', pairId)
       .gte('reviewed_at', start.toISOString())
       .order('id'),
   );
@@ -150,7 +168,7 @@ export async function recordReview(payload) {
 
 // practice: sentence cards are separate from review cards
 
-// Practice cards of the pair's active words, each with its word and the state of the word's de_en review card.
+// Practice cards of the pair's active words, each with its word and the state of the word's forward review card.
 export async function listPracticeCards(pairId) {
   const rows = await fetchAll(() =>
     supabase
@@ -163,16 +181,17 @@ export async function listPracticeCards(pairId) {
   return rows.map(({ words: { cards, ...word }, ...card }) => ({
     ...card,
     word,
-    deEnState: cards.find((c) => c.direction === 'de_en')?.state ?? null,
+    forwardState: cards.find((c) => c.direction === 'forward')?.state ?? null,
   }));
 }
 
 // Attempts made since `start`.
-export async function listPracticeLogsSince(start) {
+export async function listPracticeLogsSince(start, pairId) {
   return fetchAll(() =>
     supabase
       .from('sentence_logs')
-      .select('sentence_card_id, practiced_at, state_before')
+      .select('sentence_card_id, practiced_at, state_before, sentence_cards!inner(words!inner(pair_id))')
+      .eq('sentence_cards.words.pair_id', pairId)
       .gte('practiced_at', start.toISOString())
       .order('id'),
   );
@@ -226,9 +245,14 @@ export async function invokeAdmin(body) {
 }
 
 // Everything the user owns, for the export. Words include deleted ones, on purpose (unlike activeWords).
-// RLS limits each table to the caller's rows. All three reads must succeed, or this throws.
+// RLS limits each table to the caller's rows. All four reads must succeed, or this throws.
 export async function exportRows() {
   const all = (table) => fetchAll(() => supabase.from(table).select('*').order('id'));
-  const [words, cards, review_logs] = await Promise.all([all('words'), all('cards'), all('review_logs')]);
-  return { words, cards, review_logs };
+  const [language_pairs, words, cards, review_logs] = await Promise.all([
+    all('language_pairs'),
+    all('words'),
+    all('cards'),
+    all('review_logs'),
+  ]);
+  return { language_pairs, words, cards, review_logs };
 }

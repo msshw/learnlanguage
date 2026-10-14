@@ -1,9 +1,10 @@
 import { localDate } from './time.js';
 
-// Pure. rows: { words, cards, review_logs } as stored, every user row, deleted words included.
+// Pure. rows: { language_pairs, words, cards, review_logs } as stored, every user row, deleted words included.
 export const buildExport = (rows, now) => ({
-  version: 1,
+  version: 2,
   exported_at: now.toISOString(),
+  language_pairs: rows.language_pairs,
   words: rows.words,
   cards: rows.cards,
   review_logs: rows.review_logs,

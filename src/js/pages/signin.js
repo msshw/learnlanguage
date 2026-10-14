@@ -1,5 +1,10 @@
 import { sendPasswordReset, signIn } from '../lib/auth.js';
+import { pickLanguage, t } from '../lib/i18n.js';
 import { safeReturnTo } from '../lib/return-to.js';
+import { lang, setLang } from '../lib/ui-lang.js';
+
+// No pair yet: the browser's language decides, and is not remembered.
+setLang(pickLanguage(navigator.languages), { cache: false });
 
 const form = document.querySelector('#signin-form');
 const error = document.querySelector('#signin-error');
@@ -23,8 +28,8 @@ form.addEventListener('submit', async (event) => {
     const returnTo = new URLSearchParams(location.search).get('returnTo');
     location.assign(safeReturnTo(returnTo, location.origin));
   } catch (err) {
-    if (err.code === 'invalid_credentials') showError('Email or password is wrong', 'Check both and try again.');
-    else showError('Could not sign in', err.message);
+    if (err.code === 'invalid_credentials') showError(t(lang, 'signin.wrongTitle'), t(lang, 'signin.wrongBody'));
+    else showError(t(lang, 'signin.failTitle'), err.message);
     form.password.value = '';
     form.password.focus();
     button.disabled = false;
@@ -41,13 +46,13 @@ forgot.addEventListener('click', async (event) => {
   event.preventDefault();
   const email = form.email.value.trim();
   if (!form.email.checkValidity() || !email) {
-    showForgotStatus('Enter your email above, then select this link again.', true);
+    showForgotStatus(t(lang, 'signin.forgotNeedEmail'), true);
     form.email.focus();
     return;
   }
   try {
     await sendPasswordReset(email);
-    showForgotStatus(`If ${email} has an account, a reset link is on its way.`, false);
+    showForgotStatus(t(lang, 'signin.resetSent', { email }), false);
   } catch (err) {
     showForgotStatus(err.message, true);
   }

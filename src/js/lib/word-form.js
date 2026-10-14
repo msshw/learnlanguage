@@ -1,4 +1,6 @@
 // Pure: no DOM, no network, no clock.
+import { t } from './i18n.js';
+
 export const PARTS_OF_SPEECH = ['noun', 'verb', 'adjective', 'adverb', 'phrase', 'other'];
 
 export const normalizeTerm = (s) => String(s ?? '').trim().replace(/\s+/g, ' ');
@@ -17,28 +19,28 @@ const optional = (s) => {
 // raw: the form's values as strings. profile: from languages.js (forms, articles, auxiliaries).
 // Returns { ok: true, value } or { ok: false, errors }.
 // value has no user_id, pair_id or source; db.js adds those on insert.
-export function buildWord(raw, profile) {
+export function buildWord(raw, profile, lang = 'en') {
   const errors = {};
   const term = normalizeTerm(raw.term);
   const partOfSpeech = raw.part_of_speech;
   const translations = splitList(raw.translations);
   const forms = {};
 
-  if (!term) errors.term = 'Enter a word';
-  if (!PARTS_OF_SPEECH.includes(partOfSpeech)) errors.part_of_speech = 'Choose a part of speech';
-  if (translations.length === 0) errors.translations = 'Enter at least one translation';
+  if (!term) errors.term = t(lang, 'wordFormError.term');
+  if (!PARTS_OF_SPEECH.includes(partOfSpeech)) errors.part_of_speech = t(lang, 'wordFormError.partOfSpeech');
+  if (translations.length === 0) errors.translations = t(lang, 'wordFormError.translations');
 
   for (const key of profile.forms[partOfSpeech] ?? []) {
     const v = optional(raw[key]);
     if (key === 'article') {
       if (profile.articles.includes(v)) forms.article = v;
-      else errors.article = 'Choose an article';
+      else errors.article = t(lang, 'wordFormError.article');
       if (new RegExp(`^(${profile.articles.join('|')})\\s`, 'i').test(term)) {
-        errors.term = 'Enter the article in its own field';
+        errors.term = t(lang, 'wordFormError.articleInTerm');
       }
     } else if (key === 'auxiliary') {
       if (v && profile.auxiliaries.includes(v)) forms.auxiliary = v;
-      else if (v) errors.auxiliary = `Choose ${profile.auxiliaries.join(' or ')}`;
+      else if (v) errors.auxiliary = t(lang, 'wordFormError.auxiliary', { options: profile.auxiliaries.join(` ${t(lang, 'wordFormError.or')} `) });
     } else if (v) forms[key] = v;
   }
 

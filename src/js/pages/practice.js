@@ -2,18 +2,24 @@ import { checkSentence } from '../lib/ai.js';
 import { requireSetup } from '../lib/auth.js';
 import { listPracticeCards, listPracticeLogsSince, recordSentence } from '../lib/db.js';
 import { formatInterval, formatNextDue } from '../lib/format.js';
+import { plural, posLabel, t } from '../lib/i18n.js';
+import { profileOf } from '../lib/languages.js';
 import { defaultRating, highlightSegments, MAX_SENTENCE_LENGTH } from '../lib/practice.js';
 import { practiceQueue, practiceStatus } from '../lib/practice-queue.js';
 import { fsrsFields, previewIntervals, schedule } from '../lib/scheduler.js';
 import { dayStart } from '../lib/time.js';
+import { lang } from '../lib/ui-lang.js';
 
 const profile = await requireSetup();
 const tz = profile.timezone;
+const pair = profile.pair;
+const targetProfile = profileOf(pair.target_lang);
 
 const $ = (selector) => document.querySelector(selector);
 const views = { error: $('#view-error'), empty: $('#view-empty'), card: $('#view-card'), summary: $('#view-summary') };
 const sentenceForm = $('#sentence-form');
 const sentenceInput = $('#sentence');
+sentenceInput.lang = pair.target_lang;
 const checkingBox = $('#checking');
 const feedback = $('#feedback');
 const ratingButtons = [...document.querySelectorAll('#ratings [data-rating]')];
@@ -24,11 +30,12 @@ const show = (name) => {
   $('#focus-foot').hidden = name !== 'card';
 };
 
-const nextDueText = (next) => (next ? `Next practice is due ${formatNextDue(next, tz)}` : 'Nothing else is scheduled');
+const nextDueText = (next) =>
+  next ? t(lang, 'practice.nextDueAt', { when: formatNextDue(next, tz, lang) }) : t(lang, 'common.nothingScheduled');
 
 function articleAndTerm(word) {
   const article = word.part_of_speech === 'noun' ? word.forms?.article : null;
-  if (!article) return [word.term];
+  if (!targetProfile.articles.includes(article)) return [word.term];
   const span = document.createElement('span');
   span.className = `v-art-text--${article}`;
   span.textContent = article;
@@ -59,8 +66,8 @@ async function start() {
   try {
     now = new Date();
     [allCards, serverLogs] = await Promise.all([
-      listPracticeCards(profile.active_pair_id),
-      listPracticeLogsSince(dayStart(now, tz)),
+      listPracticeCards(pair.id),
+      listPracticeLogsSince(dayStart(now, tz), pair.id),
     ]);
   } catch {
     show('error');
@@ -90,13 +97,13 @@ function showCard() {
   const word = current.word;
   phase = 'prompt';
 
-  $('#progress').textContent = `${answers.length + 1} of ${total}`;
+  $('#progress').textContent = t(lang, 'practice.progress', { n: answers.length + 1, total });
   $('#progress-bar').style.width = `${(answers.length / total) * 100}%`;
   $('#word').replaceChildren(...articleAndTerm(word));
   $('#translations').textContent = word.translations.join(', ');
-  $('#hint').textContent = word.hint_en ?? '';
-  $('#hint').hidden = !word.hint_en;
-  $('#meta').textContent = word.part_of_speech;
+  $('#hint').textContent = word.hint_native ?? '';
+  $('#hint').hidden = !word.hint_native;
+  $('#meta').textContent = posLabel(lang, word.part_of_speech);
 
   sentenceInput.value = '';
   $('#sentence-error').hidden = true;
@@ -114,9 +121,9 @@ sentenceForm.addEventListener('submit', async (event) => {
   if (phase !== 'prompt') return;
   const text = sentenceInput.value.trim();
   const error = !text
-    ? 'Write a sentence first'
+    ? t(lang, 'practice.writeFirst')
     : text.length > MAX_SENTENCE_LENGTH
-      ? `Use at most ${MAX_SENTENCE_LENGTH} characters`
+      ? plural(lang, 'practice.tooLong', MAX_SENTENCE_LENGTH, { max: MAX_SENTENCE_LENGTH })
       : '';
   $('#sentence-error').textContent = error;
   $('#sentence-error').hidden = !error;
@@ -169,12 +176,12 @@ function showFeedback(result) {
   verdict.hidden = true;
   if (!ok) {
     verdict.className = 'v-feedback v-feedback--hard';
-    $('#verdict-title').textContent = 'Check unavailable';
+    $('#verdict-title').textContent = t(lang, 'practice.unavailable');
     $('#verdict-body').replaceChildren();
     verdict.hidden = false;
   } else if (!result.usesWord) {
     verdict.className = 'v-feedback v-feedback--again';
-    $('#verdict-title').textContent = 'This sentence does not use the word';
+    $('#verdict-title').textContent = t(lang, 'practice.wordUnused');
     $('#verdict-body').replaceChildren();
     verdict.hidden = false;
   }
@@ -197,14 +204,14 @@ function showFeedback(result) {
   $('#corrected').textContent = showCorrected ? result.corrected : '';
 
   const word = current.word;
-  $('#example-block').hidden = ok || !word.example_de;
-  $('#example-de').textContent = word.example_de ?? '';
-  $('#example-en').textContent = word.example_en ?? '';
-  $('#example-en').hidden = !word.example_en;
+  $('#example-block').hidden = ok || !word.example_target;
+  $('#example-target').textContent = word.example_target ?? '';
+  $('#example-native').textContent = word.example_native ?? '';
+  $('#example-native').hidden = !word.example_native;
 
   const dues = previewIntervals(fsrsFields(current), submittedAt);
   for (const button of ratingButtons) {
-    button.querySelector('small').textContent = formatInterval(dues[Number(button.dataset.rating) - 1], submittedAt);
+    button.querySelector('small').textContent = formatInterval(dues[Number(button.dataset.rating) - 1], submittedAt, lang);
   }
   selectRating(defaultRating(result)); // null after an unavailable check: the user has to choose
   $('#save-error').hidden = true;

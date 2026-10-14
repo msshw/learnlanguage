@@ -5,18 +5,14 @@ import { signInAlice, stubAutofill } from '../helpers/e2e.js';
 
 // Needs `supabase start` with the seeded users and a .env with the local URL, anon key and service-role key.
 const admin = adminClient();
-const resetLimit = () => admin.from('profiles').update({ new_words_per_day: 10 }).eq('id', ALICE_ID);
 
 test.beforeEach(async ({ page }) => {
   await stubAutofill(page, { status: 'ok', spent_usd: 0.5, cap_usd: 2 });
   await resetUser(admin, ALICE_ID);
-  await resetLimit();
   await seedPair(admin, ALICE_ID);
   await signInAlice(page);
   await page.goto('/settings.html');
 });
-
-test.afterEach(resetLimit);
 
 test('shows the pair and this month\'s AI usage', async ({ page }) => {
   await expect(page.getByText('German ← English')).toBeVisible();
@@ -31,8 +27,8 @@ test('shows "Usage unavailable" when the function fails, and the rest still work
   await page.reload();
   await expect(page.locator('#usage')).toHaveText('Usage unavailable');
   await page.locator('#limit').fill('4');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.getByText('Saved')).toBeVisible();
+  await page.getByRole('button', { name: 'Save limit' }).click();
+  await expect(page.locator('#limit-saved')).toBeVisible();
 });
 
 test('the daily limit saves, persists, and rejects bad values', async ({ page }) => {
@@ -40,22 +36,22 @@ test('the daily limit saves, persists, and rejects bad values', async ({ page })
 
   await page.locator('#limit').fill('3');
   await page.locator('#limit').press('Enter');
-  await expect(page.getByText('Saved')).toBeVisible();
+  await expect(page.locator('#limit-saved')).toBeVisible();
   await page.reload();
   await expect(page.locator('#limit')).toHaveValue('3');
 
   for (const bad of ['101', '-1', '2.5', '']) {
     await page.locator('#limit').fill(bad);
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await expect(page.getByText('Enter a whole number from 0 to 100')).toBeVisible();
-    await expect(page.getByText('Saved')).toBeHidden();
+    await page.getByRole('button', { name: 'Save limit' }).click();
+    await expect(page.locator('#limit-error')).toHaveText('Enter a whole number from 0 to 100');
+    await expect(page.locator('#limit-saved')).toBeHidden();
   }
-  const { data } = await admin.from('profiles').select('new_words_per_day').eq('id', ALICE_ID).single();
+  const { data } = await admin.from('language_pairs').select('new_words_per_day').eq('user_id', ALICE_ID).single();
   expect(data.new_words_per_day).toBe(3);
 
   await page.locator('#limit').fill('0');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.getByText('Saved')).toBeVisible();
+  await page.getByRole('button', { name: 'Save limit' }).click();
+  await expect(page.locator('#limit-saved')).toBeVisible();
 });
 
 test('export downloads one JSON file with deleted words too', async ({ page }) => {
@@ -70,7 +66,7 @@ test('export downloads one JSON file with deleted words too', async ({ page }) =
   expect(file.suggestedFilename()).toMatch(/^vocab-export-\d{4}-\d{2}-\d{2}\.json$/);
 
   const out = JSON.parse(readFileSync(await file.path(), 'utf8'));
-  expect(out.version).toBe(1);
+  expect(out.version).toBe(2);
   expect(out.words.map((w) => w.term).sort()).toEqual(['Baum', 'Haus']);
   expect(out.words.find((w) => w.term === 'Baum').deleted_at).not.toBeNull();
   expect(out.cards).toHaveLength(4);

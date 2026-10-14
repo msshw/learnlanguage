@@ -1,9 +1,20 @@
-<nav aria-label="Main" class="v-sidebar">
+<nav aria-label="Main" data-i18n-aria="sidebar.main" class="v-sidebar">
   <div class="v-brand"><span class="v-brand-mark">V</span><span class="v-brand-text">Vocab</span></div>
+  <div class="pair-switcher" id="pair-switcher" hidden>
+    <button type="button" id="pair-button" class="pair-button" aria-haspopup="menu" aria-expanded="false" aria-controls="pair-menu">
+      <span class="pair-code" aria-hidden="true"></span>
+      <span class="pair-text"><span class="pair-name"></span><span class="pair-from v-hint"></span></span>
+    </button>
+    <div id="pair-menu" class="pair-menu v-card" role="menu" aria-label="Switch language" data-i18n-aria="sidebar.switchLanguage" hidden>
+      <div id="pair-items" class="grid gap-1"></div>
+      <p id="pair-empty" class="v-hint" hidden><span data-i18n="sidebar.noOtherLanguages">No other languages.</span> <a id="pair-settings" href="/settings.html" role="menuitem" data-i18n="sidebar.addInSettings">Add one in Settings</a></p>
+      <p id="pair-error" role="alert" hidden class="v-error"></p>
+    </div>
+  </div>
   {{#each nav}}
   <a href="{{href}}" data-code="{{code}}" {{#if current}}aria-current="page"{{/if}} aria-keyshortcuts="{{chip}}{{#if key}} {{key}}{{/if}}" class="v-nav"{{#if adminOnly}} data-admin-only hidden{{/if}}>
     <svg class="nav-icon" aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{icon}}"/></svg>
-    <span class="nav-label">{{label}}</span>
+    <span class="nav-label" data-i18n="{{i18n}}">{{label}}</span>
     <span class="v-key" data-label="{{label}}" aria-hidden="true">{{chip}}</span>
     {{#if dueCount}}<span id="nav-due" class="v-count" hidden></span>{{/if}}
     {{#if practiceCount}}<span id="nav-practice" class="v-count" hidden></span>{{/if}}

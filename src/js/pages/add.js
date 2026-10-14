@@ -3,9 +3,14 @@ import { confirmSuggestion, suggest } from '../lib/ai.js';
 import { REPORT_MIN, findDuplicates, insertWord, reportSuggestion } from '../lib/db.js';
 import { buildWord, confirmTarget, normalizeTerm, senseToFormValues } from '../lib/word-form.js';
 import { fillSenseMeta, initWordForm } from '../lib/word-form-view.js';
+import { languageLabel, plural, t } from '../lib/i18n.js';
+import { profileOf } from '../lib/languages.js';
+import { lang } from '../lib/ui-lang.js';
 
 const profile = await requireSetup();
-const pairId = profile.active_pair_id;
+const pairId = profile.pair.id;
+const langProfile = profileOf(profile.pair.target_lang);
+const names = { target: languageLabel(lang, profile.pair.target_lang), native: languageLabel(lang, profile.pair.native_lang) };
 
 const $ = (selector) => document.querySelector(selector);
 const termForm = $('#term-form');
@@ -29,7 +34,9 @@ const reportError = $('#report-error');
 const notice = $('#notice');
 const wordForm = $('#word-form');
 const saved = $('#saved');
-const view = initWordForm(wordForm);
+const view = initWordForm(wordForm, langProfile, names, lang);
+$('#term-label').textContent = t(lang, 'add.wordIn', { target: names.target });
+$('#not-a-word-message').textContent = t(lang, 'add.notRecognized', { target: names.target });
 
 const panels = [termForm, duplicate, suggesting, senses, notAWord, notice, wordForm];
 const show = (...visible) => {
@@ -89,7 +96,7 @@ function resetReport() {
 
 function syncReportCount() {
   const length = reportReason.value.trim().length;
-  reportCount.textContent = `${length} of ${REPORT_MIN} characters`;
+  reportCount.textContent = plural(lang, 'add.reportCount', REPORT_MIN, { n: length, min: REPORT_MIN });
   reportSend.disabled = length < REPORT_MIN;
 }
 
@@ -129,8 +136,8 @@ function showSenses(list, suggestion) {
       radio.querySelector('.v-sense__num').textContent = String(i + 1);
       radio.querySelector('.v-sense__trans').textContent = sense.translations.join(', ');
       const meta = radio.querySelector('.sense-meta');
-      fillSenseMeta(meta, sense);
-      radio.querySelector('.v-sense__ex').textContent = sense.example_de ?? '';
+      fillSenseMeta(meta, sense, langProfile, lang);
+      radio.querySelector('.v-sense__ex').textContent = sense.example_target ?? '';
       radio.addEventListener('click', () => showForm(sense.term, { sense }));
       return radio;
     }),
@@ -159,7 +166,7 @@ async function showResult(term, result) {
     show(notAWord);
     $('#save-manually').focus();
   } else {
-    showForm(term, { message: 'Suggestions unavailable' });
+    showForm(term, { message: t(lang, 'add.suggestionsUnavailable') });
   }
 }
 
@@ -168,7 +175,7 @@ async function requestSuggestions(term) {
   const id = ++requestId;
   show(suggesting);
   $('#skip-suggestions').focus();
-  const result = await suggest(term);
+  const result = await suggest(term, pairId);
   if (id !== requestId) return;
 
   const corrected = result.status === 'ok' ? result.senses[0].term : null;
@@ -202,7 +209,7 @@ termForm.addEventListener('submit', async (event) => {
 
   const term = normalizeTerm(termInput.value);
   if (!term) {
-    termError.textContent = 'Enter a word';
+    termError.textContent = t(lang, 'add.enterWord');
     termError.hidden = false;
     return;
   }
@@ -212,7 +219,7 @@ termForm.addEventListener('submit', async (event) => {
     if (matches.length > 0) showDuplicate(matches[0].id, term);
     else await requestSuggestions(term);
   } catch (err) {
-    termError.textContent = `Could not check the word: ${err.message}`;
+    termError.textContent = t(lang, 'add.checkError', { message: err.message });
     termError.hidden = false;
   }
 });
@@ -246,7 +253,7 @@ document.addEventListener('keydown', (event) => {
 
 wordForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const result = buildWord(view.read());
+  const result = buildWord(view.read(), langProfile, lang);
   if (!result.ok) {
     view.showErrors(result.errors);
     return;
@@ -263,7 +270,7 @@ wordForm.addEventListener('submit', async (event) => {
     saved.hidden = false;
     showTermStep();
   } catch (err) {
-    view.showErrors({ form: `Could not save the word: ${err.message}` });
+    view.showErrors({ form: t(lang, 'common.saveWordError', { message: err.message }) });
   } finally {
     button.disabled = false;
   }

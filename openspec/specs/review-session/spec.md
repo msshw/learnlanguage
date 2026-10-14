@@ -21,15 +21,19 @@ The Review page SHALL build the session queue once, after trying to save any pen
 - **THEN** an inline message and a "Retry" button are shown
 
 ### Requirement: Card prompts
-For a `de_en` card the prompt SHALL show the German term, with its article for nouns. For an `en_de` card it SHALL show the English translations joined with commas, the hint when the word has one, and the part of speech. The page SHALL show the position in the session ("3 of 12"); requeued cards extend the total.
+For a `forward` card the prompt SHALL show the target-language term, with its article for nouns when the pair's profile has articles, and the direction line "<Target> → <Native>". For a `reverse` card it SHALL show the native-language translations joined with commas, the hint when the word has one, the part of speech, and the direction line "<Native> → <Target>". Language names SHALL come from the supported language list. The page SHALL show the position in the session ("3 of 12"); requeued cards extend the total.
 
 #### Scenario: de_en prompt
-- **WHEN** a `de_en` card for the noun `das Haus` is shown
-- **THEN** the prompt shows `das Haus`
+- **WHEN** a `forward` card for the noun `das Haus` of a `de`/`en` pair is shown
+- **THEN** the prompt shows `das Haus` and the direction line "German → English"
 
 #### Scenario: en_de prompt
-- **WHEN** an `en_de` card for `Bank` with translation `bank` and hint `bank (money)` is shown
-- **THEN** the prompt shows `bank`, `bank (money)` and `noun`
+- **WHEN** a `reverse` card for `Bank` with translation `bank` and hint `bank (money)` of a `de`/`en` pair is shown
+- **THEN** the prompt shows `bank`, `bank (money)` and `noun`, and the direction line "English → German"
+
+#### Scenario: Generic forward prompt
+- **WHEN** a `forward` card for the French noun `maison` of a `fr`/`ru` pair is shown
+- **THEN** the prompt shows `maison` without an article and the direction line "French → Russian"
 
 ### Requirement: Submitting an answer
 Pressing Enter in the answer field SHALL grade the answer and show the feedback. An empty answer SHALL be accepted and graded as wrong.

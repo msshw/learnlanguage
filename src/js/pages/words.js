@@ -3,9 +3,15 @@ import { listWords, softDeleteWord, updateWord } from '../lib/db.js';
 import { formatRelativeDay } from '../lib/format.js';
 import { buildWord } from '../lib/word-form.js';
 import { articleBadge, initWordForm } from '../lib/word-form-view.js';
+import { applyTranslations } from '../lib/i18n-dom.js';
+import { languageLabel, t } from '../lib/i18n.js';
+import { profileOf } from '../lib/languages.js';
+import { lang } from '../lib/ui-lang.js';
 import { matchesQuery, nextDue, wordLabel } from '../lib/word-list.js';
 
 const profile = await requireSetup();
+const langProfile = profileOf(profile.pair.target_lang);
+document.querySelector('#empty-hint').textContent = t(lang, 'common.emptyHint', { language: languageLabel(lang, profile.pair.target_lang) });
 
 const loadError = document.querySelector('#load-error');
 const empty = document.querySelector('#empty');
@@ -18,7 +24,10 @@ const rowTemplate = document.querySelector('#row-template');
 
 const editDialog = document.querySelector('#edit-dialog');
 const editForm = document.querySelector('#edit-form');
-const editView = initWordForm(editForm);
+const editView = initWordForm(editForm, langProfile, {
+  target: languageLabel(lang, profile.pair.target_lang),
+  native: languageLabel(lang, profile.pair.native_lang),
+}, lang);
 const editActions = document.querySelector('#edit-actions');
 const deleteStep = document.querySelector('#delete-step');
 const deleteError = document.querySelector('#delete-error');
@@ -43,22 +52,23 @@ function render() {
   rows.replaceChildren(
     ...shown.map((word) => {
       const row = rowTemplate.content.cloneNode(true);
+      applyTranslations(row, lang);
       const due = nextDue(word.cards);
       const label = row.querySelector('.v-word');
       label.href = `/word.html?id=${word.id}`;
-      const badge = articleBadge(word);
+      const badge = articleBadge(word, langProfile);
       // The space keeps "das Haus" readable as text, not "dasHaus".
       label.append(...(badge ? [badge, ' '] : []), word.term);
-      if (word.hint_en) {
+      if (word.hint_native) {
         const hint = document.createElement('p');
         hint.className = 'v-hint';
-        hint.textContent = word.hint_en;
+        hint.textContent = word.hint_native;
         row.querySelector('[data-cell="word"]').append(hint);
       }
       row.querySelector('[data-cell="translations"]').textContent = word.translations.join(', ');
-      row.querySelector('[data-cell="due"]').textContent = due ? formatRelativeDay(due, now, profile.timezone) : '';
+      row.querySelector('[data-cell="due"]').textContent = due ? formatRelativeDay(due, now, profile.timezone, lang) : '';
       const edit = row.querySelector('[data-action="edit"]');
-      edit.setAttribute('aria-label', `Edit ${wordLabel(word)}`);
+      edit.setAttribute('aria-label', t(lang, 'words.editWord', { word: wordLabel(word) }));
       edit.addEventListener('click', () => openEdit(word));
       return row;
     }),
@@ -80,7 +90,7 @@ function openEdit(word) {
 
 editForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const result = buildWord(editView.read());
+  const result = buildWord(editView.read(), langProfile, lang);
   if (!result.ok) {
     editView.showErrors(result.errors);
     return;
@@ -93,7 +103,7 @@ editForm.addEventListener('submit', async (event) => {
     editDialog.close();
     render();
   } catch (err) {
-    editView.showErrors({ form: `Could not save the word: ${err.message}` });
+    editView.showErrors({ form: t(lang, 'common.saveWordError', { message: err.message }) });
   } finally {
     button.disabled = false;
   }
@@ -120,7 +130,7 @@ document.querySelector('#delete-confirm').addEventListener('click', async (event
     editDialog.close();
     render();
   } catch (err) {
-    deleteError.textContent = `Could not delete the word: ${err.message}`;
+    deleteError.textContent = t(lang, 'words.deleteError', { message: err.message });
     deleteError.hidden = false;
   } finally {
     button.disabled = false;
@@ -139,7 +149,7 @@ let firstLoad = true;
 async function load() {
   loadError.hidden = true;
   try {
-    words = await listWords(profile.active_pair_id);
+    words = await listWords(profile.pair.id);
   } catch {
     empty.hidden = true;
     list.hidden = true;

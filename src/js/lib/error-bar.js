@@ -1,4 +1,6 @@
 // A small bar for errors nobody handled. Caught errors show their own inline message instead.
+import { t } from './i18n.js';
+import { lang } from './ui-lang.js';
 
 // event: an 'error' or 'unhandledrejection' event.
 export function shouldShow(event) {
@@ -17,11 +19,11 @@ function showBar() {
     bar.className =
       'fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-4 border-b border-red-300 bg-red-50 px-4 py-2 text-sm text-red-900';
     const message = document.createElement('span');
-    message.textContent = 'Something went wrong. Reload the page if it keeps happening.';
+    message.textContent = t(lang, 'errorBar.message');
     const dismiss = document.createElement('button');
     dismiss.type = 'button';
     dismiss.className = 'underline';
-    dismiss.textContent = 'Dismiss';
+    dismiss.textContent = t(lang, 'errorBar.dismiss');
     dismiss.addEventListener('click', () => bar.remove());
     bar.append(message, dismiss);
   }

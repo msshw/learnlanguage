@@ -1,35 +1,35 @@
-{{#> base title="Word" narrow=true}}
+{{#> base title="Word" titleKey="title.word" narrow=true}}
 <div>
   <a href="/words.html" id="back" aria-keyshortcuts="Escape" class="v-btn v-btn--ghost">
-    Back to words <span class="v-key" aria-hidden="true">Esc</span>
+    <span data-i18n="word.back">Back to words</span> <span class="v-key" aria-hidden="true">Esc</span>
   </a>
 </div>
 
 <section id="load-error" hidden class="v-card grid gap-4 p-8">
-  <p class="v-error">Could not load this word.</p>
-  <div><button id="retry" type="button" class="v-btn v-btn--secondary">Retry</button></div>
+  <p class="v-error" data-i18n="word.loadError">Could not load this word.</p>
+  <div><button id="retry" type="button" class="v-btn v-btn--secondary" data-i18n="common.retry">Retry</button></div>
 </section>
 
 <section id="not-found" hidden class="v-card grid gap-2 p-8">
-  <h1 class="page-title">Word not found</h1>
-  <p class="v-hint">It may have been deleted.</p>
+  <h1 class="page-title" data-i18n="word.notFound">Word not found</h1>
+  <p class="v-hint" data-i18n="word.notFoundHint">It may have been deleted.</p>
 </section>
 
 <article id="word" hidden class="grid gap-6">
   <h1 id="term" class="word-term"></h1>
   <p id="hint" hidden class="v-hint"></p>
   <section id="pos-section" class="grid gap-1">
-    <h2 class="v-label">Part of speech</h2>
+    <h2 class="v-label" data-i18n="common.partOfSpeech">Part of speech</h2>
     <p id="pos"></p>
   </section>
   <section id="translations-section" class="grid gap-1">
-    <h2 class="v-label">Translations</h2>
+    <h2 class="v-label" data-i18n="common.translations">Translations</h2>
     <p id="translations"></p>
   </section>
   <section id="examples-section" hidden class="grid gap-1">
-    <h2 class="v-label">Examples</h2>
-    <p id="example-de"></p>
-    <p id="example-en" class="v-hint"></p>
+    <h2 class="v-label" data-i18n="word.examples">Examples</h2>
+    <p id="example-target"></p>
+    <p id="example-native" class="v-hint"></p>
   </section>
 </article>
 

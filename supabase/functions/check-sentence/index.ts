@@ -6,7 +6,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { EFFORT, MAX_SENTENCE_LENGTH, MAX_TOKENS, MODEL, SENTENCE_CALL_TIMEOUT_MS } from '../_shared/config.ts';
 import { costUsd, isOverCap } from '../_shared/cost.ts';
 import { cors, json, logCall, readSpend, sessionUser } from '../_shared/ai.ts';
-import { SYSTEM_PROMPT, userMessage } from './prompt.ts';
+import { systemPrompt, userMessage } from './prompt.ts';
+import { isAllowedPair } from '../_shared/languages.ts';
 import { OUTPUT_SCHEMA } from './schema.ts';
 import { validateCheck } from './validate.ts';
 
@@ -57,7 +58,7 @@ Deno.serve(async (req) => {
   // Service role read, filtered by the caller: another user's or a deleted word looks like no word.
   const { data: word, error: wordError } = await admin
     .from('words')
-    .select('term, part_of_speech, translations, hint_en')
+    .select('term, part_of_speech, translations, hint_native, language_pairs!inner(target_lang, native_lang)')
     .eq('id', body.word_id)
     .eq('user_id', user.id)
     .is('deleted_at', null)
@@ -67,6 +68,11 @@ Deno.serve(async (req) => {
     return reply('error');
   }
   if (!word) return json({ error: 'bad request' }, 400);
+  // The languages come only from the word's own pair; nothing language-related is read from the body.
+  // An unsupported pair is a 400 before the cap check, the model and ai_calls.
+  const pair = Array.isArray(word.language_pairs) ? word.language_pairs[0] : word.language_pairs;
+  if (!pair || !isAllowedPair(pair.target_lang, pair.native_lang)) return json({ error: 'bad request' }, 400);
+  const system = systemPrompt(pair);
 
   // Fail closed: if the spend cannot be read, do not call the model.
   const spend = await readSpend(admin, user.id);
@@ -84,7 +90,7 @@ Deno.serve(async (req) => {
         {
           model: MODEL,
           max_tokens: MAX_TOKENS,
-          system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+          system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
           messages: [{ role: 'user', content: userMessage(word, sentence, problem) }],
           output_config: { effort: EFFORT, format: { type: 'json_schema', schema: OUTPUT_SCHEMA } },
         } as any,

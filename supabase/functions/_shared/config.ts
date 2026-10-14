@@ -10,13 +10,8 @@ export const MONTHLY_CAP_USD = 2;
 export const CALL_TIMEOUT_MS = 6000;
 
 export const MAX_TERM_LENGTH = 80;
-export const LANGS = { target: 'de', native: 'en' };
 
 export const PARTS_OF_SPEECH = ['noun', 'verb', 'adjective', 'adverb', 'phrase', 'other'];
-export const ARTICLES = ['der', 'die', 'das'];
-export const AUXILIARIES = ['haben', 'sein'];
-export const NOUN_FORMS = ['article', 'plural'];
-export const VERB_FORMS = ['praeteritum', 'partizip2', 'auxiliary', 'separable_prefix'];
 
 // check-sentence
 export const MAX_SENTENCE_LENGTH = 300;

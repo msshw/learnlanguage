@@ -1,29 +1,22 @@
-{{#> base title="Setup" nosidebar=true}}
+{{#> base title="Setup" titleKey="title.setup" nosidebar=true}}
 <main class="mx-auto grid w-full max-w-[440px] gap-6 px-4 py-16">
   <div class="v-brand v-brand--lg justify-center"><span class="v-brand-mark">V</span>Vocab</div>
   <form id="setup-form" class="v-card grid gap-6 p-8">
     <div class="grid gap-2">
-      <h1 class="page-title">Let's set you up</h1>
-      <p class="v-hint">You can change this later in Settings.</p>
-    </div>
-    <div class="v-field">
-      <span id="learning-label" class="v-label">I'm learning</span>
-      <div role="radiogroup" aria-labelledby="learning-label">
-        <div role="radio" aria-checked="true" tabindex="0" class="v-sense">
-          <span class="v-sense__trans">Deutsch</span>
-          <span class="v-hint">German</span>
-        </div>
-      </div>
+      <h1 class="page-title" data-i18n="setup.title">Let's set you up</h1>
+      <p class="v-hint" data-i18n="setup.lead">You can change this later in Settings.</p>
     </div>
     <label class="v-field">
-      <span class="v-label">I speak</span>
-      <select name="native_lang" class="v-input" disabled>
-        <option value="en">English</option>
-      </select>
-      <span class="v-hint">Translations and hints use this language.</span>
+      <span class="v-label" data-i18n="common.iSpeak">I speak</span>
+      <select id="native-lang" name="native_lang" class="v-input"></select>
+      <span class="v-hint" data-i18n="setup.nativeHint">Translations and hints use this language.</span>
+    </label>
+    <label class="v-field">
+      <span class="v-label" data-i18n="common.imLearning">I'm learning</span>
+      <select id="target-lang" name="target_lang" class="v-input"></select>
     </label>
     <p id="setup-error" role="alert" hidden class="v-error"></p>
-    <button type="submit" class="v-btn v-btn--primary v-btn--lg w-full justify-center">Start learning</button>
+    <button id="start" type="submit" disabled class="v-btn v-btn--primary v-btn--lg w-full justify-center" data-i18n="setup.start">Start learning</button>
   </form>
 </main>
 <script type="module">

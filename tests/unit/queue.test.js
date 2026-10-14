@@ -14,7 +14,7 @@ const card = (over = {}) => {
   return {
     id: `c${seq}`,
     word_id: `w${seq}`,
-    direction: 'de_en',
+    direction: 'forward',
     state: 'review',
     due: ago(DAY),
     last_review: ago(5 * DAY),
@@ -56,7 +56,7 @@ describe('new cards and the daily limit', () => {
     card_id: cardId,
     reviewed_at: ago(3600e3),
     state_before: { state: 'new' },
-    cards: { direction: 'de_en' },
+    cards: { direction: 'forward' },
     ...over,
   });
 
@@ -84,9 +84,9 @@ describe('new cards and the daily limit', () => {
     expect(run([known, ...fresh(5)], { limit: 3, pending })).toHaveLength(2);
   });
 
-  it('ignores logs that are not first de_en reviews today', () => {
+  it('ignores logs that are not first forward reviews today', () => {
     const logs = [
-      introducedLog('a', { cards: { direction: 'en_de' } }),
+      introducedLog('a', { cards: { direction: 'reverse' } }),
       introducedLog('b', { state_before: { state: 'review' } }),
       introducedLog('c', { reviewed_at: ago(2 * DAY) }),
     ];
@@ -99,26 +99,26 @@ describe('new cards and the daily limit', () => {
   });
 });
 
-describe('new en_de cards', () => {
+describe('new reverse cards', () => {
   const pair = (deEn, enDe) => {
     const wordId = `pair${seq++}`;
     return [
-      card({ id: `${wordId}-de`, word_id: wordId, direction: 'de_en', ...deEn }),
-      card({ id: `${wordId}-en`, word_id: wordId, direction: 'en_de', state: 'new', due: ago(3600e3), last_review: null, ...enDe }),
+      card({ id: `${wordId}-de`, word_id: wordId, direction: 'forward', ...deEn }),
+      card({ id: `${wordId}-en`, word_id: wordId, direction: 'reverse', state: 'new', due: ago(3600e3), last_review: null, ...enDe }),
     ];
   };
 
-  it('joins the day after the de_en card was reviewed', () => {
+  it('joins the day after the forward card was reviewed', () => {
     const [de, en] = pair({ state: 'review', due: ahead(3 * DAY), last_review: ago(DAY) });
     expect(ids(run([de, en]))).toEqual([en.id]);
   });
 
-  it('waits when the de_en card was reviewed today', () => {
+  it('waits when the forward card was reviewed today', () => {
     const [de, en] = pair({ state: 'review', due: ahead(3 * DAY), last_review: ago(3600e3) });
     expect(run([de, en])).toHaveLength(0);
   });
 
-  it('waits when the de_en card is still new', () => {
+  it('waits when the forward card is still new', () => {
     const [de, en] = pair({ state: 'new', due: ago(2 * DAY), last_review: null });
     expect(ids(run([de, en], { limit: 0 }))).toEqual([]);
   });
@@ -129,7 +129,7 @@ describe('new en_de cards', () => {
     expect(ids(q)).toEqual([en.id]);
   });
 
-  it('is placed before new de_en cards', () => {
+  it('is placed before new forward cards', () => {
     const [de, en] = pair({ state: 'review', due: ahead(3 * DAY), last_review: ago(DAY) });
     const newOne = card({ id: 'new', state: 'new', due: ago(50 * 3600e3), last_review: null });
     expect(ids(run([newOne, de, en]))).toEqual([en.id, 'new']);
@@ -138,8 +138,8 @@ describe('new en_de cards', () => {
 
 describe('exclusions', () => {
   it('keeps one card per word, the more overdue', () => {
-    const a = card({ id: 'a', word_id: 'w', direction: 'de_en', due: ago(2 * DAY) });
-    const b = card({ id: 'b', word_id: 'w', direction: 'en_de', due: ago(DAY) });
+    const a = card({ id: 'a', word_id: 'w', direction: 'forward', due: ago(2 * DAY) });
+    const b = card({ id: 'b', word_id: 'w', direction: 'reverse', due: ago(DAY) });
     expect(ids(run([b, a]))).toEqual(['a']);
   });
 
@@ -196,26 +196,34 @@ describe('homeStatus', () => {
 
   it('reports all done after answers were given today', () => {
     const c = card({ due: '2026-10-14T12:00:00Z' });
-    const logsToday = [{ card_id: 'z', reviewed_at: ago(3600e3), state_before: { state: 'review' }, cards: { direction: 'de_en' } }];
+    const logsToday = [{ card_id: 'z', reviewed_at: ago(3600e3), state_before: { state: 'review' }, cards: { direction: 'forward' } }];
     expect(homeStatus({ ...base, cards: [c], wordCount: 1, logsToday }).kind).toBe('done');
   });
 
   it('counts words introduced today, from saved and pending answers, once per card', () => {
     const log = (cardId, over = {}) => ({
-      card_id: cardId, reviewed_at: ago(3600e3), state_before: { state: 'new' }, cards: { direction: 'de_en' }, ...over,
+      card_id: cardId, reviewed_at: ago(3600e3), state_before: { state: 'new' }, cards: { direction: 'forward' }, ...over,
     });
     const a = card({ id: 'a', state: 'learning', due: ahead(DAY) });
     const b = card({ id: 'b', state: 'learning', due: ahead(DAY) });
-    const e = card({ id: 'e', direction: 'en_de', state: 'learning', due: ahead(DAY) });
+    const e = card({ id: 'e', direction: 'reverse', state: 'learning', due: ahead(DAY) });
     const logsToday = [
       log('a'),
       log('a', { state_before: { state: 'learning' } }),
-      log('e', { cards: { direction: 'en_de' } }), // en_de never counts
+      log('e', { cards: { direction: 'reverse' } }), // reverse never counts
       log('x', { state_before: { state: 'review' } }),
     ];
     const pending = [{ card_id: 'b', reviewed_at: ago(60e3), state_before: { state: 'new' } }];
     const s = homeStatus({ ...base, cards: [a, b, e], wordCount: 3, logsToday, pending });
     expect(s.newToday).toBe(2);
     expect(homeStatus({ ...base, cards: [], wordCount: 0 }).newToday).toBe(0);
+  });
+});
+
+describe('pair-scoped logs', () => {
+  it('does not count introductions of another pair (db passes only this pair\'s logs)', () => {
+    const cards = [1, 2].map((i) => card({ id: `n${i}`, state: 'new', due: ago(DAY), last_review: null }));
+    const otherPairLogs = []; // listLogsSince(start, pairId) returned nothing for this pair
+    expect(ids(run(cards, { limit: 2, logsToday: otherPairLogs }))).toEqual(['n1', 'n2']);
   });
 });

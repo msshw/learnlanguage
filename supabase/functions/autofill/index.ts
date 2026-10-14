@@ -3,13 +3,14 @@
 // All rules live in the pure modules next to this file.
 import Anthropic from 'npm:@anthropic-ai/sdk';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { CALL_TIMEOUT_MS, EFFORT, LANGS, MAX_TERM_LENGTH, MAX_TOKENS, MODEL } from '../_shared/config.ts';
+import { CALL_TIMEOUT_MS, EFFORT, MAX_TERM_LENGTH, MAX_TOKENS, MODEL } from '../_shared/config.ts';
 import { cacheKey } from '../_shared/cache.ts';
 import { costUsd, isOverCap, usageSummary } from '../_shared/cost.ts';
 import { generate, type Call } from './generate.ts';
 import { asCandidates, servedSenses } from './serve.ts';
-import { SYSTEM_PROMPT } from './prompt.ts';
-import { OUTPUT_SCHEMA } from './schema.ts';
+import { systemPrompt } from './prompt.ts';
+import { outputSchema } from './schema.ts';
+import { isAllowedPair, profileOf } from '../_shared/languages.ts';
 import { validate } from '../_shared/validate.ts';
 import { cors, json, logCall, readSpend, sessionUser } from '../_shared/ai.ts';
 
@@ -31,7 +32,6 @@ const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { au
 // Returns the cleaned term, or null when the request body is not acceptable.
 function readTerm(body: any): string | null {
   if (!body || typeof body.term !== 'string') return null;
-  if (body.target_lang !== LANGS.target || body.native_lang !== LANGS.native) return null;
   const term = body.term.trim().replace(/\s+/g, ' ');
   if (!term || term.length > MAX_TERM_LENGTH || /[\u0000-\u001f\u007f]/.test(term)) return null;
   return term;
@@ -69,7 +69,25 @@ Deno.serve(async (req) => {
   }
 
   const term = readTerm(body);
-  if (!term) return json({ error: 'bad request' }, 400);
+  if (!term || typeof body.pair_id !== 'string' || !UUID.test(body.pair_id)) return json({ error: 'bad request' }, 400);
+
+  // The pair comes from the database, filtered by the caller. pair_id is only a lookup key; any
+  // language code in the body is never read. Unknown, foreign or unsupported pair: 400, before the
+  // cache, the cap and the model, and nothing is written to ai_calls.
+  const { data: pair, error: pairError } = await admin
+    .from('language_pairs')
+    .select('target_lang, native_lang')
+    .eq('id', body.pair_id)
+    .eq('user_id', user.id)
+    .maybeSingle();
+  if (pairError) {
+    console.error('pair read failed', pairError.message);
+    return reply('error');
+  }
+  if (!pair || !isAllowedPair(pair.target_lang, pair.native_lang)) return json({ error: 'bad request' }, 400);
+  const profile = profileOf(pair.target_lang);
+  const system = systemPrompt(pair);
+  const schema = outputSchema(profile);
 
   // Cache lookup before the cap: a hit costs nothing and is served even over the cap.
   // A failed lookup counts as a miss.
@@ -78,8 +96,8 @@ Deno.serve(async (req) => {
     const { data, error } = await admin
       .from('ai_suggestions')
       .select('id, senses')
-      .eq('target_lang', LANGS.target)
-      .eq('native_lang', LANGS.native)
+      .eq('target_lang', pair.target_lang)
+      .eq('native_lang', pair.native_lang)
       .eq(column, key)
       .eq('status', 'confirmed')
       .is('deleted_at', null)
@@ -102,8 +120,8 @@ Deno.serve(async (req) => {
   const { data: rejectedRows, error: rejectedError } = await admin
     .from('rejected_senses')
     .select('fingerprint, part_of_speech, translations')
-    .eq('target_lang', LANGS.target)
-    .eq('native_lang', LANGS.native)
+    .eq('target_lang', pair.target_lang)
+    .eq('native_lang', pair.native_lang)
     .eq('term_key', key)
     .order('created_at', { ascending: false })
     .limit(1000);
@@ -118,9 +136,9 @@ Deno.serve(async (req) => {
         {
           model: MODEL,
           max_tokens: MAX_TOKENS,
-          system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+          system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
           messages: [{ role: 'user', content: message }],
-          output_config: { effort: EFFORT, format: { type: 'json_schema', schema: OUTPUT_SCHEMA } },
+          output_config: { effort: EFFORT, format: { type: 'json_schema', schema } },
         } as any,
         { signal: AbortSignal.timeout(CALL_TIMEOUT_MS) },
       );
@@ -142,7 +160,7 @@ Deno.serve(async (req) => {
     }
     try {
       const block = response.content.find((b: any) => b.type === 'text') as any;
-      const result = validate(JSON.parse(block?.text ?? ''));
+      const result = validate(JSON.parse(block?.text ?? ''), profile);
       return { ...out, problem: result.ok ? null : result.error, result };
     } catch {
       return { ...out, problem: 'output is not JSON', result: null };
@@ -157,8 +175,8 @@ Deno.serve(async (req) => {
   const { data, error } = await admin
     .from('ai_suggestions')
     .insert({
-      target_lang: LANGS.target,
-      native_lang: LANGS.native,
+      target_lang: pair.target_lang,
+      native_lang: pair.native_lang,
       term_key: key,
       corrected_key: cacheKey(stored[0].term),
       senses: stored,

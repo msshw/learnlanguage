@@ -1,34 +1,34 @@
 <div class="space-y-4">
   <label class="v-field">
-    <span class="v-label">Term (without article)</span>
+    <span class="v-label" data-i18n="wordForm.term">Word or phrase (without article)</span>
     <input name="term" type="text" autocomplete="off" class="v-input" />
     <p data-error-for="term" class="v-error" hidden></p>
   </label>
 
   <label class="v-field">
-    <span class="v-label">Part of speech</span>
+    <span class="v-label" data-i18n="common.partOfSpeech">Part of speech</span>
     <select name="part_of_speech" class="v-input">
-      <option value="noun">noun</option>
-      <option value="verb">verb</option>
-      <option value="adjective">adjective</option>
-      <option value="adverb">adverb</option>
-      <option value="phrase">phrase</option>
-      <option value="other">other</option>
+      <option value="noun" data-i18n="pos.noun">noun</option>
+      <option value="verb" data-i18n="pos.verb">verb</option>
+      <option value="adjective" data-i18n="pos.adjective">adjective</option>
+      <option value="adverb" data-i18n="pos.adverb">adverb</option>
+      <option value="phrase" data-i18n="pos.phrase">phrase</option>
+      <option value="other" data-i18n="pos.misc">other</option>
     </select>
     <p data-error-for="part_of_speech" class="v-error" hidden></p>
   </label>
 
   <label class="v-field">
-    <span class="v-label">Translations (separate with commas)</span>
+    <span class="v-label" data-i18n="wordForm.translations">Translations (separate with commas)</span>
     <input name="translations" type="text" autocomplete="off" class="v-input" />
     <p data-error-for="translations" class="v-error" hidden></p>
   </label>
 
   <fieldset data-pos="noun" class="space-y-4">
     <label class="v-field">
-      <span class="v-label">Article</span>
+      <span class="v-label" data-i18n="wordForm.article">Article</span>
       <select name="article" class="v-input">
-        <option value="">choose</option>
+        <option value="" data-i18n="wordForm.choose">choose</option>
         <option value="der">der</option>
         <option value="die">die</option>
         <option value="das">das</option>
@@ -36,53 +36,53 @@
       <p data-error-for="article" class="v-error" hidden></p>
     </label>
     <label class="v-field">
-      <span class="v-label">Plural (optional)</span>
+      <span class="v-label" data-i18n="wordForm.plural">Plural (optional)</span>
       <input name="plural" type="text" autocomplete="off" class="v-input" />
     </label>
   </fieldset>
 
   <fieldset data-pos="verb" class="space-y-4">
     <label class="v-field">
-      <span class="v-label">Präteritum, 3rd person singular (optional)</span>
+      <span class="v-label" data-i18n="wordForm.praeteritum">Präteritum, 3rd person singular (optional)</span>
       <input name="praeteritum" type="text" autocomplete="off" class="v-input" />
     </label>
     <label class="v-field">
-      <span class="v-label">Partizip II (optional)</span>
+      <span class="v-label" data-i18n="wordForm.partizip2">Partizip II (optional)</span>
       <input name="partizip2" type="text" autocomplete="off" class="v-input" />
     </label>
     <label class="v-field">
-      <span class="v-label">Auxiliary (optional)</span>
+      <span class="v-label" data-i18n="wordForm.auxiliary">Auxiliary (optional)</span>
       <select name="auxiliary" class="v-input">
-        <option value="">choose</option>
+        <option value="" data-i18n="wordForm.choose">choose</option>
         <option value="haben">haben</option>
         <option value="sein">sein</option>
       </select>
       <p data-error-for="auxiliary" class="v-error" hidden></p>
     </label>
     <label class="v-field">
-      <span class="v-label">Separable prefix (optional)</span>
+      <span class="v-label" data-i18n="wordForm.separablePrefix">Separable prefix (optional)</span>
       <input name="separable_prefix" type="text" autocomplete="off" class="v-input" />
     </label>
   </fieldset>
 
   <label class="v-field">
-    <span class="v-label">Hint for English to German prompts (optional)</span>
-    <input name="hint_en" type="text" autocomplete="off" class="v-input" />
+    <span class="v-label" data-i18n="wordForm.hint">Hint (optional)</span>
+    <input name="hint_native" type="text" autocomplete="off" class="v-input" />
   </label>
   <label class="v-field">
-    <span class="v-label">Example sentence in German (optional)</span>
-    <input name="example_de" type="text" autocomplete="off" class="v-input" />
+    <span class="v-label" data-i18n="wordForm.exampleSentence">Example sentence (optional)</span>
+    <input name="example_target" type="text" autocomplete="off" class="v-input" />
   </label>
   <label class="v-field">
-    <span class="v-label">Example sentence in English (optional)</span>
-    <input name="example_en" type="text" autocomplete="off" class="v-input" />
+    <span class="v-label" data-i18n="wordForm.exampleTranslation">Example translation (optional)</span>
+    <input name="example_native" type="text" autocomplete="off" class="v-input" />
   </label>
   <label class="v-field">
-    <span class="v-label">Notes (optional)</span>
+    <span class="v-label" data-i18n="wordForm.notes">Notes (optional)</span>
     <textarea name="notes" rows="2" class="v-input"></textarea>
   </label>
   <label class="v-field">
-    <span class="v-label">Tags, separate with commas (optional)</span>
+    <span class="v-label" data-i18n="wordForm.tags">Tags, separate with commas (optional)</span>
     <input name="tags" type="text" autocomplete="off" class="v-input" />
   </label>
 

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ALICE_ID, adminClient, resetUser, seedPair, seedWord } from '../helpers/admin.js';
+import { ALICE_ID, adminClient, learnWord, resetUser, seedPair, seedWord } from '../helpers/admin.js';
 import { AUTOFILL_ERROR, CHECK_ERROR, signInAlice, stubAutofill, stubCheckSentence } from '../helpers/e2e.js';
 
 // Needs `supabase start` with the seeded users and a .env with the local URL, anon key and service-role key.
@@ -15,16 +15,10 @@ const CLEAN = { status: 'ok', corrected: SENTENCE, uses_word: true, issues: [] }
 
 let pair;
 
-// A word whose de_en review card is in review state, so its practice card is eligible.
+// A word whose forward review card is in review state, so its practice card is eligible.
 async function learnedWord(word) {
   const w = await seedWord(admin, ALICE_ID, pair.id, word);
-  const ago = (days) => new Date(Date.now() - days * 86400e3).toISOString();
-  const { error } = await admin
-    .from('cards')
-    .update({ state: 'review', due: ago(1), stability: 5, difficulty: 5, reps: 2, scheduled_days: 5, elapsed_days: 5, last_review: ago(6) })
-    .eq('word_id', w.id)
-    .eq('direction', 'de_en');
-  if (error) throw error;
+  await learnWord(admin, w.id);
   return w;
 }
 
@@ -34,7 +28,7 @@ test.beforeEach(async ({ page }) => {
   await stubAutofill(page, AUTOFILL_ERROR);
   await resetUser(admin, ALICE_ID);
   pair = await seedPair(admin, ALICE_ID);
-  await learnedWord({ term: 'Bank', translations: ['bank'], hint_en: 'bank (money)', forms: { article: 'die' }, example_de: 'Die Bank ist zu.', example_en: 'The bank is closed.' });
+  await learnedWord({ term: 'Bank', translations: ['bank'], hint_native: 'bank (money)', forms: { article: 'die' }, example_target: 'Die Bank ist zu.', example_native: 'The bank is closed.' });
 });
 
 test('a checked sentence shows its issue, defaults to Hard and goes through to the summary by keyboard', async ({ page }) => {
@@ -119,7 +113,7 @@ test('check unavailable: no rating is preselected and Enter waits for one', asyn
   await page.keyboard.press('Enter');
 
   await expect(page.getByText('Check unavailable')).toBeVisible();
-  await expect(page.locator('#example-de')).toHaveText('Die Bank ist zu.');
+  await expect(page.locator('#example-target')).toHaveText('Die Bank ist zu.');
   await expect(page.locator('#your-sentence mark')).toHaveCount(0);
   await expect(page.locator('#ratings [aria-pressed="true"]')).toHaveCount(0);
 

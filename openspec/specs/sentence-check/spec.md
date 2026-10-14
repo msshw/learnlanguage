@@ -1,12 +1,12 @@
 # sentence-check Specification
 
 ## Purpose
-Defines the `check-sentence` edge function: it checks a German sentence the user wrote with one of their words and returns a corrected sentence and located issues, with the same logging, spending cap and fallbacks as autofill.
+Defines the `check-sentence` edge function: it checks a sentence in the pair's target language the user wrote with one of their words and returns a corrected sentence and located issues, with the same logging, spending cap and fallbacks as autofill.
 
 ## Requirements
 
 ### Requirement: Check endpoint
-The `check-sentence` function SHALL accept a POST with the caller's session token and a JSON body `{word_id, sentence}` and respond with `{status, corrected, uses_word, issues}`. `status` SHALL be one of `ok`, `over_cap` or `error`. `word_id` SHALL name an active word of the caller; the function SHALL read the word's term, part of speech, translations and hint itself and SHALL NOT accept word content from the request. `sentence` SHALL be at most 300 characters after trimming, not empty, and without control characters. A request without a valid session SHALL be rejected. A body that is not valid JSON, a bad sentence, or a `word_id` that is malformed, unknown, deleted or another user's SHALL be rejected with a client error. Rejected requests SHALL NOT call the model or write to `ai_calls`. When `status` is not `ok`, `corrected` SHALL be null, `uses_word` false and `issues` empty.
+The `check-sentence` function SHALL accept a POST with the caller's session token and a JSON body `{word_id, sentence}` and respond with `{status, corrected, uses_word, issues}`. `status` SHALL be one of `ok`, `over_cap` or `error`. `word_id` SHALL name an active word of the caller; the function SHALL read the word's term, part of speech, translations and hint, and the target and native language of the word's pair, itself from the database, and SHALL NOT accept word content or languages from the request. The word's pair SHALL be allowed by the supported language list (see language-profiles). `sentence` SHALL be at most 300 characters after trimming, not empty, and without control characters. A request without a valid session SHALL be rejected. A body that is not valid JSON, a bad sentence, a `word_id` that is malformed, unknown, deleted or another user's, or a word whose pair the list does not allow SHALL be rejected with a client error. Rejected requests SHALL NOT call the model or write to `ai_calls`. When `status` is not `ok`, `corrected` SHALL be null, `uses_word` false and `issues` empty.
 
 #### Scenario: Valid request
 - **WHEN** alice posts her word id for `Bank` and `Ich gehe zu die Bank.`
@@ -24,8 +24,16 @@ The `check-sentence` function SHALL accept a POST with the caller's session toke
 - **WHEN** a request arrives without a valid session token
 - **THEN** it is rejected and the model is not called
 
+#### Scenario: Languages from the word's pair
+- **WHEN** alice posts the id of a word of her `fr`/`ru` pair with a body that also carries `target_lang: "de"`
+- **THEN** the sentence is checked as French and the messages are in Russian
+
+#### Scenario: Unsupported pair
+- **WHEN** the word belongs to the caller's pair with target `xx`
+- **THEN** a client error is returned and the model is not called
+
 ### Requirement: Check content
-With status `ok`: `corrected` SHALL be the full sentence with grammar, spelling and word-choice errors fixed, equal to the input when there are none. `uses_word` SHALL be true when the sentence uses the word, in any inflected form, in the sense given by its translations. `issues` SHALL hold 0 to 5 items ordered by position, each `{start, end, message}`: `start` and `end` are character offsets into the submitted sentence (as trimmed), counted in UTF-16 code units with `end` exclusive, `start < end`, and no two issues overlap. `message` SHALL be a short English explanation of at most 25 words.
+With status `ok`: `corrected` SHALL be the full sentence with grammar, spelling and word-choice errors fixed, equal to the input when there are none. `uses_word` SHALL be true when the sentence uses the word, in any inflected form, in the sense given by its translations. `issues` SHALL hold 0 to 5 items ordered by position, each `{start, end, message}`: `start` and `end` are character offsets into the submitted sentence (as trimmed), counted in UTF-16 code units with `end` exclusive, `start < end`, and no two issues overlap. `message` SHALL be a short explanation of at most 25 words in the native language of the word's pair. The sentence SHALL be checked as a sentence in the pair's target language, and the prompt SHALL name both languages.
 
 #### Scenario: Wrong case after preposition
 - **WHEN** the sentence is `Ich gehe zu die Bank.`
@@ -38,6 +46,10 @@ With status `ok`: `corrected` SHALL be the full sentence with grammar, spelling 
 #### Scenario: Word missing
 - **WHEN** the sentence for `Bank` is `Ich gehe nach Hause.`
 - **THEN** `uses_word` is false
+
+#### Scenario: Russian messages
+- **WHEN** the word belongs to a `de`/`ru` pair and the sentence has an error
+- **THEN** the issue message is in Russian
 
 ### Requirement: Check output validation
 The function SHALL validate every model result in code before returning it: required fields present, `corrected` a non-empty string of at most 400 characters, at most 5 issues, messages within the limit, and every issue located in the submitted sentence. The model SHALL point to each issue by quoting the exact text it covers; the function SHALL compute `start` and `end` from that text, taking the first occurrence that does not overlap an issue already placed. A quote that cannot be placed, a result cut off by the token cap, or a refusal SHALL count as invalid and be retried once. If the retry also fails, the function SHALL return status `error`.

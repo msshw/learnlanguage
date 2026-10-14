@@ -49,7 +49,7 @@ afterAll(async () => {
 });
 
 describe('cards are created with the word', () => {
-  it('creates a forward card due now and an reverse card due a day later', async () => {
+  it('creates a forward card due now and a reverse card due a day later', async () => {
     const word = await insertWord();
     const { data: cards } = await alice.from('cards').select('*').eq('word_id', word.id);
 

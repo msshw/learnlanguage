@@ -85,7 +85,7 @@ describe('servedSenses and asCandidates', () => {
 
 describe('generate (two calls at most)', () => {
   const ok = (senses, tokens = {}) => ({ in: 100, out: 50, ms: 1, problem: null, result: { ok: true, status: 'ok', senses }, ...tokens });
-  const bad = { in: 100, out: 50, ms: 1, problem: 'bad hint_en', result: { ok: false, error: 'bad hint_en' } };
+  const bad = { in: 100, out: 50, ms: 1, problem: 'bad hint_native', result: { ok: false, error: 'bad hint_native' } };
 
   const run = async (rejected, outcomes) => {
     const messages = [];
@@ -138,7 +138,7 @@ describe('generate (two calls at most)', () => {
     const { result, messages, logs } = await run(rejectedMoney, [bad, ok([money])]);
     expect(result).toEqual({ status: 'error' });
     expect(messages).toHaveLength(2);
-    expect(logs.map((l) => l.error)).toEqual(['bad hint_en', ALL_REJECTED]);
+    expect(logs.map((l) => l.error)).toEqual(['bad hint_native', ALL_REJECTED]);
   });
 
   it('does not retry a transport failure', async () => {

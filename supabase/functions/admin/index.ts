@@ -5,6 +5,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { cacheKey } from '../_shared/cache.ts';
 import { fingerprint, toRejected } from '../_shared/fingerprint.ts';
 import { validate } from '../_shared/validate.ts';
+import { isAllowedPair, profileOf } from '../_shared/languages.ts';
 import { groupRejected, groupReports, recordsToRestore } from './group.ts';
 import { PAGE_SIZE, parseOffset, shapeCall, shapeSuggestion, shapeUser, trimPage } from './views.ts';
 
@@ -188,8 +189,15 @@ Deno.serve(async (req) => {
     if (action !== 'remove') args.p_index = index;
 
     if (action === 'edit') {
-      // Same validation as model output; the stored sense is what validate() returns.
-      const v = validate({ is_german_word: true, senses: [body.sense] });
+      // Same validation as model output, with the profile of the suggestion's own pair (read from the
+      // database; nothing language-related comes from the body). The stored sense is what validate() returns.
+      const { data: rec, error: recError } = await db
+        .from('ai_suggestions')
+        .select('target_lang, native_lang')
+        .eq('id', id)
+        .maybeSingle();
+      if (recError || !rec || !isAllowedPair(rec.target_lang, rec.native_lang)) return json({ status: 'error' });
+      const v = validate({ is_target_word: true, senses: [body.sense] }, profileOf(rec.target_lang));
       if (!v.ok || v.status !== 'ok') return json({ status: 'invalid', error: v.ok ? 'not a sense' : v.error });
       args.p_sense = v.senses[0];
       if (index === 0) args.p_corrected_key = cacheKey(v.senses[0].term);

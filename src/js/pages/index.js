@@ -2,8 +2,10 @@ import { requireSetup } from '../lib/auth.js';
 import { countWords, listLogsSince, listQueueCards, recordReview } from '../lib/db.js';
 import { formatDay, formatNextDue, greeting } from '../lib/format.js';
 import { userPending } from '../lib/pending.js';
+import { languageLabel, plural, t } from '../lib/i18n.js';
 import { homeStatus } from '../lib/queue.js';
 import { dayStart } from '../lib/time.js';
+import { lang } from '../lib/ui-lang.js';
 
 const profile = await requireSetup();
 const tz = profile.timezone;
@@ -22,8 +24,10 @@ const states = {
   done: $('#home-done'),
 };
 
+$('#empty-hint').textContent = t(lang, 'common.emptyHint', { language: languageLabel(lang, profile.pair.target_lang) });
+
 // The profile has no name column yet, so this greets without a name until one exists.
-$('#greeting').textContent = greeting(new Date(), tz, profile.name);
+$('#greeting').textContent = greeting(new Date(), tz, profile.name, lang);
 
 startReview.addEventListener('click', () => location.assign('/review.html'));
 
@@ -42,22 +46,22 @@ async function load() {
     await pending.flush(recordReview);
     const now = new Date();
     const [wordCount, cards, logsToday] = await Promise.all([
-      countWords(profile.active_pair_id),
-      listQueueCards(profile.active_pair_id),
-      listLogsSince(dayStart(now, tz)),
+      countWords(profile.pair.id),
+      listQueueCards(profile.pair.id),
+      listLogsSince(dayStart(now, tz), profile.pair.id),
     ]);
-    const limit = profile.new_words_per_day;
+    const limit = profile.pair.new_words_per_day;
     const status = homeStatus({ cards, logsToday, pending: pending.payloads(), wordCount, now, tz, limit });
 
     $('#banner').hidden = !pending.needsBanner();
-    $('#today').textContent = formatDay(now, tz);
+    $('#today').textContent = formatDay(now, tz, lang);
     $('#due-count').textContent = String(status.dueCount);
-    $('#due-label').textContent = status.dueCount === 1 ? 'card due' : 'cards due';
-    const nextText = status.nextAvailable ? `Next due: ${formatNextDue(status.nextAvailable, tz)}` : '';
+    $('#due-label').textContent = plural(lang, 'home.dueLabel', status.dueCount);
+    const nextText = status.nextAvailable ? t(lang, 'format.nextDue', { when: formatNextDue(status.nextAvailable, tz, lang) }) : '';
     $('#nothing-next').textContent = nextText;
     $('#done-next').textContent = nextText;
     $('#word-count').textContent = String(wordCount);
-    $('#new-today').textContent = `${status.newToday} of ${limit}`;
+    $('#new-today').textContent = t(lang, 'home.newTodayValue', { n: status.newToday, limit });
 
     for (const [kind, el] of Object.entries(states)) el.hidden = kind !== status.kind;
     const due = status.kind === 'due';

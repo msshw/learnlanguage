@@ -21,16 +21,29 @@ export async function resetUser(admin, userId) {
   }
 }
 
-// Gives the user an active de/en pair, as if Setup were done.
-export async function seedPair(admin, userId) {
+// Gives the user a pair, as if Setup were done (default de/en). It becomes the active pair unless
+// `active` is false. Returns the pair row.
+export async function seedPair(admin, userId, { target = 'de', native = 'en', active = true } = {}) {
   const { data, error } = await admin
     .from('language_pairs')
-    .insert({ user_id: userId, target_lang: 'de', native_lang: 'en' })
+    .insert({ user_id: userId, target_lang: target, native_lang: native })
     .select()
     .single();
   if (error) throw error;
-  check(await admin.from('profiles').update({ active_pair_id: data.id }).eq('id', userId));
+  if (active) check(await admin.from('profiles').update({ active_pair_id: data.id }).eq('id', userId));
   return data;
+}
+
+// Makes the learned-state review card of a word eligible for practice and due for review.
+export async function learnWord(admin, wordId) {
+  const ago = (days) => new Date(Date.now() - days * 86400e3).toISOString();
+  check(
+    await admin
+      .from('cards')
+      .update({ state: 'review', due: ago(1), stability: 5, difficulty: 5, reps: 2, scheduled_days: 5, elapsed_days: 5, last_review: ago(6) })
+      .eq('word_id', wordId)
+      .eq('direction', 'forward'),
+  );
 }
 
 // Inserts a word for the user; the database trigger creates its two cards.

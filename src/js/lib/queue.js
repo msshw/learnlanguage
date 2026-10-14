@@ -9,7 +9,7 @@ import { dayStart, nextDayStart } from './time.js';
 const ms = (iso) => new Date(iso).getTime();
 const byDue = (a, b) => ms(a.due) - ms(b.due);
 const isLearning = (c) => c.state === 'learning' || c.state === 'relearning';
-const otherDirection = (d) => (d === 'de_en' ? 'en_de' : 'de_en');
+const otherDirection = (d) => (d === 'forward' ? 'reverse' : 'forward');
 
 function prepare({ cards, logsToday = [], pending = [], now, tz, limit }) {
   const start = dayStart(now, tz);
@@ -23,10 +23,10 @@ function prepare({ cards, logsToday = [], pending = [], now, tz, limit }) {
   const directionOf = new Map(cards.map((c) => [c.id, c.direction]));
   const live = cards.filter((c) => !c.word?.deleted_at && !pendingIds.has(c.id));
 
-  // A word is introduced when its de_en card is reviewed for the first time (state_before was new).
+  // A word is introduced when its forward card is reviewed for the first time (state_before was new).
   const introduced = new Set();
   const countIfIntroduction = (cardId, stateBefore, reviewedAt, direction) => {
-    if (stateBefore?.state === 'new' && direction === 'de_en' && ms(reviewedAt) >= startMs) {
+    if (stateBefore?.state === 'new' && direction === 'forward' && ms(reviewedAt) >= startMs) {
       introduced.add(cardId);
     }
   };
@@ -42,23 +42,23 @@ function prepare({ cards, logsToday = [], pending = [], now, tz, limit }) {
     .filter((c) => (c.state === 'review' ? ms(c.due) < nextStartMs : isLearning(c) && ms(c.due) <= now.getTime()))
     .sort(byDue);
 
-  // A new en_de card starts the day after its de_en card was reviewed.
-  const newEnDe = live
+  // A new reverse card starts the day after its forward card was reviewed.
+  const newReverse = live
     .filter((c) => {
-      if (c.state !== 'new' || c.direction !== 'en_de' || ms(c.due) >= nextStartMs) return false;
+      if (c.state !== 'new' || c.direction !== 'reverse' || ms(c.due) >= nextStartMs) return false;
       const sibling = siblingOf(c);
       return Boolean(sibling && sibling.state !== 'new' && sibling.last_review && ms(sibling.last_review) < startMs);
     })
     .sort(byDue);
 
-  const newDeEn = live
-    .filter((c) => c.state === 'new' && c.direction === 'de_en' && ms(c.due) < nextStartMs)
+  const newForward = live
+    .filter((c) => c.state === 'new' && c.direction === 'forward' && ms(c.due) < nextStartMs)
     .sort(byDue)
     .slice(0, allowance);
 
   // One card per word: the one earlier in queue order wins.
   const seen = new Set();
-  const queue = [...due, ...newEnDe, ...newDeEn].filter((c) => {
+  const queue = [...due, ...newReverse, ...newForward].filter((c) => {
     if (seen.has(c.word_id)) return false;
     seen.add(c.word_id);
     return true;
@@ -85,7 +85,7 @@ export function nextAvailable(options) {
       consider(ms(c.due) > now.getTime() ? new Date(c.due) : now);
     } else if (c.state === 'review') {
       consider(ms(c.due) >= nextStart.getTime() ? dayStart(new Date(c.due), tz) : now);
-    } else if (c.direction === 'de_en') {
+    } else if (c.direction === 'forward') {
       consider(nextStart); // waiting beyond today's limit
     } else if (siblingOf(c)?.state !== 'new') {
       consider(new Date(Math.max(nextStart.getTime(), dayStart(new Date(c.due), tz).getTime())));
@@ -95,7 +95,7 @@ export function nextAvailable(options) {
 }
 
 // kind: 'empty' (no words), 'due', 'nothing' (nothing due, no answers today), 'done' (answered today).
-// newToday: words introduced today (first de_en answer), the number the daily limit counts.
+// newToday: words introduced today (first forward answer), the number the daily limit counts.
 export function homeStatus(options) {
   const { wordCount, now, tz, logsToday = [], pending = [] } = options;
   if (wordCount === 0) return { kind: 'empty', dueCount: 0, nextAvailable: null, newToday: 0 };

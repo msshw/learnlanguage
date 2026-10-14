@@ -38,9 +38,10 @@ Commands (for reference; Maks runs them):
 
 ## Architecture rules
 
-- `src/js/lib/scheduler.js`, `grader.js`, `queue.js`, `practice-queue.js`, `practice.js`, `languages.js` and `time.js` are pure: no DOM, no network, no `Date.now()` inside. Pass `now` in.
+- `src/js/lib/scheduler.js`, `grader.js`, `queue.js`, `practice-queue.js`, `practice.js`, `languages.js`, `i18n.js` and `time.js` are pure: no DOM, no network, no `Date.now()` inside. Pass `now` in.
 - Only `db.js` imports `supabase-js`. Pages go through `lib`, never query directly.
 - `src/js/lib/languages.js` is a copy of `supabase/functions/_shared/languages.ts`; change both, a unit test keeps them equal.
+- Every user-facing string on non-admin pages goes through the dictionaries in `src/js/lib/i18n/` (`en.js`, `ru.js`); add each key to every language, a unit test keeps them equal. The interface language is the active pair's native language. Admin pages and edge function errors stay English.
 - Only `ai.js` calls AI, and only through the AI edge functions (`autofill`, `check-sentence`). Never call the Anthropic API from the client.
 - Admin actions on shared suggestions go only through the `admin` edge function, which checks `is_admin` on every request.
 - No secrets in the repo or the client bundle. `ANTHROPIC_API_KEY` lives in Supabase function secrets only.

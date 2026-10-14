@@ -9,17 +9,17 @@ const BANK_MONEY = {
   term: 'Bank',
   part_of_speech: 'noun',
   translations: ['bank'],
-  hint_en: 'bank (money)',
+  hint_native: 'bank (money)',
   forms: { article: 'die', plural: 'Banken' },
-  example_de: 'Ich gehe heute zur Bank.',
-  example_en: "I'm going to the bank today.",
+  example_target: 'Ich gehe heute zur Bank.',
+  example_native: "I'm going to the bank today.",
 };
 const BANK_SEAT = {
   ...BANK_MONEY,
   translations: ['bench'],
-  hint_en: 'bench (seat)',
+  hint_native: 'bench (seat)',
   forms: { article: 'die', plural: 'Bänke' },
-  example_de: 'Wir sitzen auf der Bank im Park.',
+  example_target: 'Wir sitzen auf der Bank im Park.',
 };
 const OK_BANK = { status: 'ok', senses: [BANK_MONEY, BANK_SEAT] };
 
@@ -43,17 +43,24 @@ const savedWords = async () =>
   (await admin.from('words').select('term, source, translations, forms').eq('user_id', ALICE_ID)).data;
 
 test('picking a sense fills the form and saves as ai_confirmed', async ({ page }) => {
-  await stubAutofill(page, OK_BANK);
+  const bodies = [];
+  await stubAutofill(page, (route) => {
+    bodies.push(route.request().postDataJSON());
+    return OK_BANK;
+  });
+  await expect(page.locator('#term-label')).toHaveText('Word in German');
   await enter(page, 'Bank');
 
   await expect(page.getByText('bench (seat)')).toBeVisible();
+  const { data: pair } = await admin.from('language_pairs').select('id').eq('user_id', ALICE_ID).single();
+  expect(bodies).toEqual([{ term: 'Bank', pair_id: pair.id }]);
   await page.keyboard.press('2');
 
   const form = page.locator('#word-form');
   await expect(form.locator('[name=translations]')).toHaveValue('bench');
   await expect(form.locator('[name=article]')).toHaveValue('die');
   await expect(form.locator('[name=plural]')).toHaveValue('Bänke');
-  await expect(form.locator('[name=hint_en]')).toHaveValue('bench (seat)');
+  await expect(form.locator('[name=hint_native]')).toHaveValue('bench (seat)');
   expect(await savedWords()).toEqual([]);
 
   await form.getByRole('button', { name: 'Save word' }).click();
@@ -73,7 +80,7 @@ test('Enter picks the first sense', async ({ page }) => {
 test('not a word offers manual entry', async ({ page }) => {
   await stubAutofill(page, { status: 'not_a_word', senses: [] });
   await enter(page, 'table');
-  await expect(page.getByText('Not recognized as German')).toBeVisible();
+  await expect(page.locator('#not-a-word-message')).toHaveText('Not recognized as German');
   await page.getByRole('button', { name: 'Save manually anyway' }).click();
 
   const form = page.locator('#word-form');
@@ -116,7 +123,7 @@ test('a corrected term that already exists shows the duplicate warning', async (
 
   await stubAutofill(page, {
     status: 'ok',
-    senses: [{ ...BANK_MONEY, term: 'Mädchen', translations: ['girl'], hint_en: 'girl (child)', forms: { article: 'das', plural: 'Mädchen' } }],
+    senses: [{ ...BANK_MONEY, term: 'Mädchen', translations: ['girl'], hint_native: 'girl (child)', forms: { article: 'das', plural: 'Mädchen' } }],
   });
   await enter(page, 'madchen');
   await expect(page.getByText('This word already exists.')).toBeVisible();

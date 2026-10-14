@@ -10,10 +10,10 @@ const SENSE = {
   term: 'Bank',
   part_of_speech: 'noun',
   translations: ['bank'],
-  hint_en: 'bank (money)',
+  hint_native: 'bank (money)',
   forms: { article: 'die', plural: 'Banken' },
-  example_de: 'Ich gehe heute zur Bank.',
-  example_en: "I'm going to the bank today.",
+  example_target: 'Ich gehe heute zur Bank.',
+  example_native: "I'm going to the bank today.",
 };
 
 const admin = adminClient();
@@ -156,7 +156,7 @@ test('Alt+M opens the admin page for an admin', async ({ page }) => {
 
 const S1 = { ...SENSE, state: 'candidate' };
 const S2 = {
-  ...SENSE, translations: ['bench'], hint_en: 'bench (seat)', forms: { article: 'die', plural: 'Bänke' }, state: 'candidate',
+  ...SENSE, translations: ['bench'], hint_native: 'bench (seat)', forms: { article: 'die', plural: 'Bänke' }, state: 'candidate',
 };
 const ENTRY = (senses, extra = {}) => ({
   suggestion_id: suggestionId,

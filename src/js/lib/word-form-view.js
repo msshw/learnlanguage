@@ -1,5 +1,6 @@
 // DOM helpers for components/word-form.html, shared by the Add word and Words pages.
 // All text goes in with textContent or .value, never innerHTML.
+import { posLabel, t } from './i18n.js';
 
 const TEXT_FIELDS = [
   'term', 'hint_native', 'example_target', 'example_native', 'notes',
@@ -12,14 +13,15 @@ export function removeNotesAndTags(form) {
 }
 
 // profile: from languages.js. names: { target, native } language names for the labels.
-export function initWordForm(form, profile, names) {
+// lang: interface language; English where omitted (the Admin pages).
+export function initWordForm(form, profile, names, lang = 'en') {
   const fields = form.elements;
 
   const labels = {
-    term: `${names.target} word or phrase (without article)`,
-    hint_native: `Hint for ${names.native} to ${names.target} prompts (optional)`,
-    example_target: `Example sentence in ${names.target} (optional)`,
-    example_native: `Example sentence in ${names.native} (optional)`,
+    term: t(lang, 'wordForm.term', names),
+    hint_native: t(lang, 'wordForm.hintNative', names),
+    example_target: t(lang, 'wordForm.exampleTarget', names),
+    example_native: t(lang, 'wordForm.exampleNative', names),
   };
   for (const [name, text] of Object.entries(labels)) {
     const label = fields[name]?.closest('label')?.querySelector('.v-label');
@@ -94,10 +96,10 @@ export function articleBadge(word, profile) {
 
 // Fills the meta line of a sense: article badge, then "term, part of speech · hint". Shared by
 // the Add word sense list and the Admin page.
-export function fillSenseMeta(meta, sense, profile) {
+export function fillSenseMeta(meta, sense, profile, lang = 'en') {
   const badge = articleBadge(sense, profile);
   if (badge) meta.append(badge);
   const term = document.createElement('span');
-  term.textContent = [`${sense.term}, ${sense.part_of_speech}`, sense.hint_native].filter(Boolean).join(' · ');
+  term.textContent = [`${sense.term}, ${posLabel(lang, sense.part_of_speech)}`, sense.hint_native].filter(Boolean).join(' · ');
   meta.append(term);
 }

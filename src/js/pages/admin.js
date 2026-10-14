@@ -1,5 +1,6 @@
 import { showForbidden, startAdminPage } from '../lib/admin-guard.js';
 import { invokeAdmin } from '../lib/db.js';
+import { languageName, profileOf } from '../lib/languages.js';
 import { buildWord, senseToFormValues } from '../lib/word-form.js';
 import { fillSenseMeta, initWordForm, removeNotesAndTags } from '../lib/word-form-view.js';
 
@@ -20,16 +21,19 @@ const senseFromValue = (v) => ({
   term: v.term,
   part_of_speech: v.part_of_speech,
   translations: v.translations,
-  hint_en: v.hint_en,
+  hint_native: v.hint_native,
   forms: v.forms,
-  example_de: v.example_de,
-  example_en: v.example_en,
+  example_target: v.example_target,
+  example_native: v.example_native,
 });
 
 // Builds one entry. After an action the entry is replaced by render() of the updated data.
 function render(entry) {
   const node = $('#entry-template').content.firstElementChild.cloneNode(true);
   const closed = entry.reports_closed === true;
+  // The suggestion's own pair decides the fields and labels, not the admin's active pair.
+  const langProfile = profileOf(entry.target_lang);
+  const names = { target: languageName(entry.target_lang), native: languageName(entry.native_lang) };
   node.querySelector('.entry-term').textContent = entry.term;
   const count = `${entry.report_count} open ${entry.report_count === 1 ? 'report' : 'reports'}`;
   node.querySelector('.entry-meta').textContent = [
@@ -83,8 +87,8 @@ function render(entry) {
       const row = $('#entry-sense-template').content.firstElementChild.cloneNode(true);
       const state = stateOf(sense);
       row.querySelector('.v-sense__trans').textContent = sense.translations.join(', ');
-      fillSenseMeta(row.querySelector('.sense-meta'), sense);
-      row.querySelector('.v-sense__ex').textContent = sense.example_de ?? '';
+      fillSenseMeta(row.querySelector('.sense-meta'), sense, langProfile);
+      row.querySelector('.v-sense__ex').textContent = sense.example_target ?? '';
       row.querySelector('.sense-state').textContent =
         state === 'rejected' ? 'Rejected' : `${state === 'confirmed' ? 'Confirmed' : 'Candidate'} · ${isJudged(sense) ? 'Judged' : 'Not judged'}`;
 
@@ -100,11 +104,11 @@ function render(entry) {
       row.querySelector('.sense-edit').addEventListener('click', () => {
         const form = $('#edit-template').content.firstElementChild.cloneNode(true);
         removeNotesAndTags(form);
-        const view = initWordForm(form);
+        const view = initWordForm(form, langProfile, names);
         view.fill({ ...senseToFormValues(sense), notes: null, tags: [] });
         form.addEventListener('submit', (event) => {
           event.preventDefault();
-          const built = buildWord(view.read());
+          const built = buildWord(view.read(), langProfile);
           if (!built.ok) {
             view.showErrors(built.errors);
             return;

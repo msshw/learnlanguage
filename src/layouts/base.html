@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en"{{#if titleKey}} data-title-key="{{titleKey}}"{{/if}}{{#if admin}} data-i18n-off{{/if}}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,7 +12,10 @@
       import '../styles/main.css';
       import { installErrorBar } from '../js/lib/error-bar.js';
       import { registerWorker } from '../js/lib/pwa.js';
+      import { lang, setLang } from '../js/lib/ui-lang.js';
       installErrorBar();
+      // First paint in the language used last on this device; the pair load corrects it.
+      setLang(lang, { cache: false });
       registerWorker();
     </script>
     {{#unless nosidebar}}

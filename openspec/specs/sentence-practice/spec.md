@@ -1,7 +1,7 @@
 # sentence-practice Specification
 
 ## Purpose
-Lets the user practise using learned words by writing a German sentence with each, getting AI feedback, and rating the attempt, on a schedule of its own that does not touch word reviews.
+Lets the user practise using learned words by writing a sentence in the target language with each, getting AI feedback, and rating the attempt, on a schedule of its own that does not touch word reviews.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ Every word SHALL have exactly one practice card with its own FSRS state, separat
 - **THEN** the word's review cards and review logs are unchanged
 
 ### Requirement: Practice queue
-The practice queue SHALL contain, for active words of the active pair only: first the practice cards that are not new and are due, most overdue first; then new practice cards, oldest word first, up to 5 new practice cards introduced per logical day (04:00 rollover in the profile timezone). A new practice card SHALL be eligible only when the word's `de_en` review card is in state `review`. Practice cards of soft-deleted words SHALL be excluded. The queue SHALL be built once when the session starts and each card SHALL appear once per session.
+The practice queue SHALL contain, for active words of the active pair only: first the practice cards that are not new and are due, most overdue first; then new practice cards, oldest word first, up to 5 new practice cards introduced per logical day in the active pair (04:00 rollover in the profile timezone). Practice in another pair SHALL NOT count toward this limit. A new practice card SHALL be eligible only when the word's `forward` review card is in state `review`. Practice cards of soft-deleted words SHALL be excluded. The queue SHALL be built once when the session starts and each card SHALL appear once per session.
 
 #### Scenario: Due first
 - **WHEN** two practice cards are due, one overdue by 3 days and one by 1 day, and new cards are eligible
@@ -32,12 +32,16 @@ The practice queue SHALL contain, for active words of the active pair only: firs
 - **THEN** no new practice card is in the queue
 
 #### Scenario: Not learned yet
-- **WHEN** a word's `de_en` review card is in state `new` or `learning`
+- **WHEN** a word's `forward` review card is in state `new` or `learning`
 - **THEN** its new practice card is not in the queue
 
 #### Scenario: Deleted word
 - **WHEN** a word with a due practice card is soft deleted
 - **THEN** its practice card is not in the queue
+
+#### Scenario: Limit per pair
+- **WHEN** 5 new practice cards of the `de`/`en` pair were practised today and the user switches to `fr`/`en` with eligible new cards
+- **THEN** up to 5 new `fr`/`en` practice cards are in the queue
 
 ### Requirement: Practice page
 The site SHALL serve a Practice page at `/practice.html` in the focus layout without the sidebar, like Review, with an "End session" button and Escape returning to Home. With an empty queue it SHALL show "Nothing due for practice", the next practice due time when there is one, and a link to Home. If the data fails to load it SHALL show an inline message and a "Retry" button. It SHALL show the position in the session ("3 of 8").

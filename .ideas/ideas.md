@@ -10,7 +10,6 @@
 
 9. If any user has saved a word from the AI suggestions, it should be saved in DB and not use AI to suggest the same word again. The AI suggestions should only show words that have not been saved by any user yet. It will save tokens.
 10. The practice page should be more informative, otherwise it's not clear what to do there, especially when there is nothing due yet.
-11. We need to differentiate the word's (sense's) data's translation. For instance, for a word Arbeit we have a translation to English "work" and a translation to french "travail". It means, we need a mechanism to save word's data in different languages, depending on the user's language pair. For example, if a user is learning German and speaks English, the translation should be saved in English. If another user is learning German and speaks French, the translation should be saved in French. The AI suggestions should also take into account the user's language pair when suggesting translations. Also, if an English user triggers the AI to suggest a translation for a German word, and then a french user triggers the AI to suggest a translation for the same German word, the AI should not suggest the same translation that was already suggested for the English user. The AI should only suggest translations that have not been suggested for any user yet.
 12. If there is only one sense in a suggestion, it should be selected and the form should be open right away.
 
 
@@ -35,3 +34,8 @@
 - Do you want the SPEC.md edits applied now or after the work? = apply now
 - The design includes no per-user drill-down or admin actions on users. Do you want either, or does
   that stay for later? = stay for later 
+
+
+- Is the active-pair-follows-UI behavior what you want, or do you prefer a separate setting? = active-pair-follows-UI
+- Should the setup page change language live when the native language is picked? = yes
+- Are admin pages and server errors out of scope?  = yes, out of scope

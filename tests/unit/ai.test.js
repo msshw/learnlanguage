@@ -15,18 +15,18 @@ afterEach(() => {
 describe('suggest', () => {
   it('returns the senses on ok and sends the request body', async () => {
     const invoke = vi.fn().mockResolvedValue({ status: 'ok', senses: [sense] });
-    expect(await suggest('Bank', { invoke })).toEqual({ status: 'ok', senses: [sense], suggestionId: null, confirmed: false });
-    expect(invoke.mock.calls[0][0]).toEqual({ term: 'Bank', target_lang: 'de', native_lang: 'en' });
+    expect(await suggest('Bank', 'p1', { invoke })).toEqual({ status: 'ok', senses: [sense], suggestionId: null, confirmed: false });
+    expect(invoke.mock.calls[0][0]).toEqual({ term: 'Bank', pair_id: 'p1' });
   });
 
   it('passes the suggestion id and confirmed flag through', async () => {
     const invoke = async () => ({ status: 'ok', senses: [sense], suggestion_id: 'abc', confirmed: true });
-    expect(await suggest('Bank', { invoke })).toMatchObject({ suggestionId: 'abc', confirmed: true });
+    expect(await suggest('Bank', 'p1', { invoke })).toMatchObject({ suggestionId: 'abc', confirmed: true });
   });
 
   it('passes not_a_word through', async () => {
     const invoke = async () => ({ status: 'not_a_word', senses: [] });
-    expect(await suggest('table', { invoke })).toEqual({ status: 'not_a_word', senses: [] });
+    expect(await suggest('table', 'p1', { invoke })).toEqual({ status: 'not_a_word', senses: [] });
   });
 
   it.each([
@@ -37,14 +37,14 @@ describe('suggest', () => {
     ['null body', null],
     ['text body', 'oops'],
   ])('maps %s to unavailable', async (_name, body) => {
-    expect(await suggest('Bank', { invoke: async () => body })).toEqual({ status: 'unavailable', senses: [] });
+    expect(await suggest('Bank', 'p1', { invoke: async () => body })).toEqual({ status: 'unavailable', senses: [] });
   });
 
   it('maps a thrown error to unavailable', async () => {
     const invoke = async () => {
       throw new Error('HTTP 500');
     };
-    expect((await suggest('Bank', { invoke })).status).toBe('unavailable');
+    expect((await suggest('Bank', 'p1', { invoke })).status).toBe('unavailable');
   });
 
   it('gives up after the timeout and aborts the request', async () => {
@@ -53,7 +53,7 @@ describe('suggest', () => {
       signal = s;
       return new Promise(() => {});
     };
-    const pending = suggest('Bank', { invoke });
+    const pending = suggest('Bank', 'p1', { invoke });
     await vi.advanceTimersByTimeAsync(7999);
     expect(signal.aborted).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
@@ -63,7 +63,7 @@ describe('suggest', () => {
 
   it('does not time out a fast answer', async () => {
     const invoke = async () => ({ status: 'ok', senses: [sense] });
-    const result = await suggest('Bank', { invoke });
+    const result = await suggest('Bank', 'p1', { invoke });
     await vi.advanceTimersByTimeAsync(20000);
     expect(result.status).toBe('ok');
   });

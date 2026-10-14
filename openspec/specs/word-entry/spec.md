@@ -1,7 +1,7 @@
 # word-entry Specification
 
 ## Purpose
-Lets a user add a German word: type the term, get warned about duplicates, pick an AI-suggested meaning or fill in the details by hand, and save. Saving puts the word on the review schedule through its two cards.
+Lets a user add a word in the active pair's target language: type the term, get warned about duplicates, pick an AI-suggested meaning or fill in the details by hand, and save. Saving puts the word on the review schedule through its two cards.
 
 ## Requirements
 
@@ -71,44 +71,56 @@ After the duplicate check, the page SHALL request suggestions for the term and s
 - **THEN** no word exists until Save word is pressed
 
 ### Requirement: Suggestion fallbacks
-When suggestions are unavailable (timeout, provider error, invalid output, over the monthly cap) the page SHALL show the empty manual form with the entered term and the message "Suggestions unavailable". When the status is `not_a_word` the page SHALL show "Not recognized as German" with a "Save manually anyway" button that shows the empty manual form with the entered term, and a way to go back to the term step. Saving manually SHALL remain possible in every case.
+When suggestions are unavailable (timeout, provider error, invalid output, over the monthly cap) the page SHALL show the empty manual form with the entered term and the message "Suggestions unavailable". When the status is `not_a_word` the page SHALL show "Not recognized as <Target>" (the active pair's target language name) with a "Save manually anyway" button that shows the empty manual form with the entered term, and a way to go back to the term step. Saving manually SHALL remain possible in every case.
 
 #### Scenario: Function down
 - **WHEN** the request fails or takes longer than 8 seconds
 - **THEN** the manual form is shown with "Suggestions unavailable"
 
 #### Scenario: Not a word
-- **WHEN** the status is `not_a_word`
+- **WHEN** the status is `not_a_word` and the active pair's target is German
 - **THEN** "Not recognized as German" and "Save manually anyway" are shown, and no form fields are filled
 
 #### Scenario: Save anyway
 - **WHEN** the user presses "Save manually anyway"
 - **THEN** the empty manual form with the entered term is shown
 
+#### Scenario: Other target
+- **WHEN** the status is `not_a_word` and the active pair's target is French
+- **THEN** "Not recognized as French" is shown
+
 ### Requirement: Fields by part of speech
-The form SHALL always offer term, part of speech (noun, verb, adjective, adverb, phrase, other), translations (comma-separated), hint, example sentence in German, example sentence in English, notes and tags (comma-separated). Nouns SHALL additionally offer article (der, die, das) and plural. Verbs SHALL additionally offer Präteritum, Partizip II, auxiliary (haben, sein) and separable prefix. Other parts of speech SHALL offer no extra fields.
+The form SHALL always offer term, part of speech (noun, verb, adjective, adverb, phrase, other), translations (comma-separated), hint, example sentence in the target language, example sentence in the native language, notes and tags (comma-separated), labelled with the active pair's language names. The extra fields SHALL come from the profile of the active pair's target language. With the German profile, nouns SHALL additionally offer article (der, die, das) and plural, verbs SHALL additionally offer Präteritum, Partizip II, auxiliary (haben, sein) and separable prefix, and other parts of speech SHALL offer no extra fields. With the generic profile, no part of speech SHALL offer extra fields.
 
 #### Scenario: Noun fields
-- **WHEN** the user selects noun
+- **WHEN** the active pair's target is German and the user selects noun
 - **THEN** article and plural are shown and verb fields are hidden
 
 #### Scenario: Verb fields
-- **WHEN** the user selects verb
+- **WHEN** the active pair's target is German and the user selects verb
 - **THEN** the four verb fields are shown and noun fields are hidden
 
 #### Scenario: Switching drops hidden values
 - **WHEN** the user fills the article, switches to adjective and saves
 - **THEN** the saved word's forms are empty
 
+#### Scenario: Generic noun
+- **WHEN** the active pair's target is French and the user selects noun
+- **THEN** no article, plural or verb field is shown, and the saved word's forms are empty
+
+#### Scenario: Labels
+- **WHEN** the active pair is `fr`/`ru`
+- **THEN** the example fields are labelled "Example sentence in French (optional)" and "Example sentence in Russian (optional)"
+
 ### Requirement: Validation
-Saving SHALL require a non-empty term, a part of speech, and at least one non-empty translation. Nouns SHALL require an article from der, die or das. A given auxiliary SHALL be haben or sein. A noun term that starts with der, die or das followed by a space SHALL be rejected with the message "Enter the article in its own field". Errors SHALL be shown inline next to the form and nothing SHALL be saved.
+Saving SHALL require a non-empty term, a part of speech, and at least one non-empty translation. With the German profile, nouns SHALL require an article from der, die or das, a given auxiliary SHALL be haben or sein, and a noun term that starts with der, die or das followed by a space SHALL be rejected with the message "Enter the article in its own field". With the generic profile no article or form SHALL be required or checked. Errors SHALL be shown inline next to the form and nothing SHALL be saved.
 
 #### Scenario: Noun without article
-- **WHEN** the user saves a noun with no article
+- **WHEN** the user saves a German noun with no article
 - **THEN** an inline error asks for an article and no word is created
 
 #### Scenario: Article typed in the term
-- **WHEN** the user saves a noun with term `die Bank`
+- **WHEN** the user saves a German noun with term `die Bank`
 - **THEN** the message "Enter the article in its own field" is shown and no word is created
 
 #### Scenario: Verb without optional forms
@@ -118,6 +130,10 @@ Saving SHALL require a non-empty term, a part of speech, and at least one non-em
 #### Scenario: No translation
 - **WHEN** the translations field is empty or only commas
 - **THEN** an inline error asks for at least one translation
+
+#### Scenario: Generic noun saves without article
+- **WHEN** the active pair's target is French and the user saves the noun `maison` with translation `house`
+- **THEN** the word is saved with forms `{}`
 
 ### Requirement: Saving a word
 A valid save SHALL create one word in the user's active pair with the trimmed term, translations split on commas with empty entries removed, tags likewise, and `forms` containing only the keys that apply to the part of speech. `source` SHALL be `ai_confirmed` when the form was filled by picking a suggested sense and `manual` otherwise (manual entry, skipped suggestions, any fallback). Editing the filled values before saving SHALL NOT change `source`. After saving, the page SHALL confirm with "Word saved" and return to an empty term step with the term field focused.
@@ -147,11 +163,11 @@ A valid save SHALL create one word in the user's active pair with the trimmed te
 - **THEN** the form is submitted
 
 ### Requirement: Two cards per saved word
-Every saved word SHALL have exactly two cards: `de_en` with state `new` due at the time of saving, and `en_de` with state `new` due one day after that.
+Every saved word SHALL have exactly two cards: `forward` (the target term is shown, the native translation is typed) with state `new` due at the time of saving, and `reverse` (the native translation is shown, the target term is typed) with state `new` due one day after that.
 
 #### Scenario: Cards after save
 - **WHEN** a word is saved
-- **THEN** it has one `de_en` card due now and one `en_de` card due about 24 hours later, both in state `new`
+- **THEN** it has one `forward` card due now and one `reverse` card due about 24 hours later, both in state `new`
 
 ### Requirement: Report a suggestion
 When the sense list shows senses that come with a suggestion id, the page SHALL show a "Report suggestion" button below the senses, also after a sense is picked. Pressing it SHALL show a reason field (plain text, with a character count) and a "Send report" button; "Send report" SHALL stay disabled until the reason has at least 50 characters after trimming, and the field SHALL accept at most 2000. The user SHALL NOT be asked which sense is wrong. Sending SHALL report that suggestion with the reason and, on success, replace the report controls with the text "Suggestion reported". On failure it SHALL show "Could not report the suggestion" inline and keep the reason and the controls. Reporting SHALL NOT change the form, the picked sense or the saved word. Without a suggestion id the button SHALL NOT be shown. The controls SHALL be reachable with Tab, and typing in the reason field SHALL NOT trigger the keys 1 to 3 or Enter of the sense list.

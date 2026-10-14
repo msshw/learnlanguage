@@ -1,6 +1,8 @@
 import { requireSetup } from '../lib/auth.js';
 import { listLogsSince, listQueueCards, recordReview } from '../lib/db.js';
 import { formatInterval, formatNextDue } from '../lib/format.js';
+import { languageLabel, posLabel, t } from '../lib/i18n.js';
+import { profileOf } from '../lib/languages.js';
 import { grade } from '../lib/grader.js';
 import { userPending } from '../lib/pending.js';
 import { buildQueue, nextAvailable } from '../lib/queue.js';
@@ -8,13 +10,18 @@ import { fsrsFields, previewIntervals, schedule } from '../lib/scheduler.js';
 import { sessionSummary } from '../lib/session.js';
 import { installShortcut } from '../lib/shortcut.js';
 import { dayStart } from '../lib/time.js';
+import { lang } from '../lib/ui-lang.js';
 
 // Review has no sidebar, so the Add word shortcut is installed here.
 installShortcut();
 
 const profile = await requireSetup();
 const tz = profile.timezone;
-const limit = profile.new_words_per_day;
+const { pair } = profile;
+const limit = pair.new_words_per_day;
+const targetName = languageLabel(lang, pair.target_lang);
+const nativeName = languageLabel(lang, pair.native_lang);
+const targetProfile = profileOf(pair.target_lang);
 const pending = userPending(profile.id);
 
 const $ = (selector) => document.querySelector(selector);
@@ -39,12 +46,13 @@ const updateBanner = () => {
   $('#banner').hidden = !pending.needsBanner();
 };
 
-const nextDueText = (next) => (next ? `Next cards are due ${formatNextDue(next, tz)}` : 'Nothing else is scheduled');
+const nextDueText = (next) =>
+  next ? t(lang, 'review.nextDueAt', { when: formatNextDue(next, tz, lang) }) : t(lang, 'common.nothingScheduled');
 
 // The article as its own span (coloured by class), then the term. Plain term when there is no article.
 function articleAndTerm(word, classPrefix) {
   const article = word.part_of_speech === 'noun' ? word.forms?.article : null;
-  if (!article) return [word.term];
+  if (!targetProfile.articles.includes(article)) return [word.term];
   const span = document.createElement('span');
   span.className = classPrefix + article;
   span.textContent = article;
@@ -81,8 +89,8 @@ async function start() {
     await pending.flush(recordReview);
     now = new Date();
     [allCards, serverLogs] = await Promise.all([
-      listQueueCards(profile.active_pair_id),
-      listLogsSince(dayStart(now, tz)),
+      listQueueCards(pair.id),
+      listLogsSince(dayStart(now, tz), pair.id),
     ]);
   } catch {
     show('error');
@@ -115,16 +123,16 @@ function showCard() {
   const word = current.word;
   phase = 'prompt';
 
-  $('#progress').textContent = `Card ${answers.length + 1} of ${total}`;
+  $('#progress').textContent = t(lang, 'review.progress', { n: answers.length + 1, total });
   $('#progress-bar').style.width = `${(answers.length / total) * 100}%`;
-  if (current.direction === 'de_en') {
-    $('#direction').textContent = 'German → English';
+  if (current.direction === 'forward') {
+    $('#direction').textContent = `${targetName} → ${nativeName}`;
     $('#prompt').replaceChildren(...articleAndTerm(word, 'v-art-text--'));
   } else {
-    $('#direction').textContent = ['English → German', word.hint_en].filter(Boolean).join(' · ');
+    $('#direction').textContent = [`${nativeName} → ${targetName}`, word.hint_native].filter(Boolean).join(' · ');
     $('#prompt').textContent = word.translations.join(', ');
   }
-  $('#meta').textContent = word.part_of_speech;
+  $('#meta').textContent = posLabel(lang, word.part_of_speech);
 
   answerInput.value = '';
   answerForm.hidden = false;
@@ -136,25 +144,25 @@ function showCard() {
 }
 
 const VERDICT = {
-  correct: ['good', 'Correct'],
-  typo: ['good', 'Correct, with a typo'],
-  article_wrong: ['hard', 'Right word, wrong article'],
-  wrong: ['again', 'Not quite'],
+  correct: ['good', 'review.verdict.correct'],
+  typo: ['good', 'review.verdict.typo'],
+  article_wrong: ['hard', 'review.verdict.articleWrong'],
+  wrong: ['again', 'review.verdict.wrong'],
 };
 
 // The full answer, then plural, verb forms and example sentence.
 function answerLines(word, direction) {
   const f = word.forms ?? {};
   const lines = [
-    direction === 'de_en' ? paragraph(word.translations.join(', ')) : paragraph(...articleAndTerm(word, 'v-art-text--')),
+    direction === 'forward' ? paragraph(word.translations.join(', ')) : paragraph(...articleAndTerm(word, 'v-art-text--')),
   ];
-  if (f.plural) lines.push(paragraph(`Plural: ${f.plural}`));
-  if (f.praeteritum) lines.push(paragraph(`Präteritum: ${f.praeteritum}`));
-  if (f.partizip2) lines.push(paragraph(`Partizip II: ${f.partizip2}`));
-  if (f.auxiliary) lines.push(paragraph(`Auxiliary: ${f.auxiliary}`));
-  if (f.separable_prefix) lines.push(paragraph(`Separable prefix: ${f.separable_prefix}`));
-  if (word.example_de) lines.push(paragraph(word.example_de));
-  if (word.example_en) lines.push(paragraph(word.example_en));
+  if (f.plural) lines.push(paragraph(t(lang, 'review.plural', { value: f.plural })));
+  if (f.praeteritum) lines.push(paragraph(t(lang, 'review.praeteritum', { value: f.praeteritum })));
+  if (f.partizip2) lines.push(paragraph(t(lang, 'review.partizip2', { value: f.partizip2 })));
+  if (f.auxiliary) lines.push(paragraph(t(lang, 'review.auxiliary', { value: f.auxiliary })));
+  if (f.separable_prefix) lines.push(paragraph(t(lang, 'review.separablePrefix', { value: f.separable_prefix })));
+  if (word.example_target) lines.push(paragraph(word.example_target));
+  if (word.example_native) lines.push(paragraph(word.example_native));
   return lines;
 }
 
@@ -173,22 +181,22 @@ function showFeedback() {
   const typedEl = $('#typed');
   const struck = graded.result === 'wrong' || graded.result === 'article_wrong';
   typedEl.hidden = graded.result === 'correct';
-  if (!typed.trim()) typedEl.textContent = 'You typed nothing';
+  if (!typed.trim()) typedEl.textContent = t(lang, 'review.typedNothing');
   else if (struck) {
     const s = document.createElement('s');
     s.textContent = typed;
     typedEl.replaceChildren(s);
   } else typedEl.textContent = typed;
 
-  const [variant, title] = VERDICT[graded.result];
+  const [variant, titleKey] = VERDICT[graded.result];
   $('#verdict').className = `v-feedback v-feedback--${variant}`;
-  $('#result').textContent = title;
+  $('#result').textContent = t(lang, titleKey);
   $('#extras').replaceChildren(...answerLines(current.word, current.direction));
 
   // Same card state and moment that confirmAnswer schedules with.
   const dues = previewIntervals(fsrsFields(current), submittedAt);
   for (const button of ratingButtons) {
-    button.querySelector('small').textContent = formatInterval(dues[Number(button.dataset.rating) - 1], submittedAt);
+    button.querySelector('small').textContent = formatInterval(dues[Number(button.dataset.rating) - 1], submittedAt, lang);
   }
   selectRating(graded.rating);
   setHints();
@@ -202,7 +210,7 @@ answerForm.addEventListener('submit', (event) => {
   typed = answerInput.value;
   submittedAt = new Date();
   durationMs = Math.round(performance.now() - shownAt);
-  graded = grade(typed, current.word, current.direction);
+  graded = grade(typed, current.word, current.direction, pair);
   rating = graded.rating;
   showFeedback();
 });
@@ -267,7 +275,7 @@ function showSummary() {
   });
   $('#sum-next').textContent = nextDueText(next);
 
-  const summary = sessionSummary(answers);
+  const summary = sessionSummary(answers, lang);
   $('#sum-reviewed').textContent = String(summary.reviewed);
   $('#sum-remembered').textContent = String(summary.remembered);
   $('#sum-watch').textContent = String(summary.toWatch.length);

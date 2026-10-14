@@ -1,8 +1,8 @@
-{{#> base title="Practice" nosidebar=true}}
+{{#> base title="Practice" titleKey="title.practice" nosidebar=true}}
 <div class="focus">
   <header id="focus-top" hidden class="focus-top">
     <button id="end" type="button" aria-keyshortcuts="Escape" class="v-btn v-btn--ghost">
-      End session <span class="v-key" aria-hidden="true">Esc</span>
+      <span data-i18n="common.endSession">End session</span> <span class="v-key" aria-hidden="true">Esc</span>
     </button>
     <div class="v-progress" aria-hidden="true"><span id="progress-bar"></span></div>
     <p id="progress" class="v-hint whitespace-nowrap"></p>
@@ -10,24 +10,24 @@
 
   <main class="focus-body gap-6">
     <section id="view-error" hidden class="v-card grid gap-4 p-8">
-      <p class="v-error">Could not load your practice cards.</p>
+      <p class="v-error" data-i18n="practice.loadError">Could not load your practice cards.</p>
       <div class="flex flex-wrap gap-3">
-        <button id="retry" type="button" class="v-btn v-btn--secondary">Retry</button>
-        <a href="/" class="v-btn v-btn--ghost">Back home</a>
+        <button id="retry" type="button" class="v-btn v-btn--secondary" data-i18n="common.retry">Retry</button>
+        <a href="/" class="v-btn v-btn--ghost" data-i18n="common.backHome">Back home</a>
       </div>
     </section>
 
     <section id="view-empty" hidden class="v-card grid gap-6 p-8">
       <div class="grid gap-2">
-        <h2 class="page-title">Nothing due for practice</h2>
+        <h2 class="page-title" data-i18n="practice.nothingDue">Nothing due for practice</h2>
         <p id="empty-next" class="v-hint"></p>
       </div>
-      <div><a id="empty-home" href="/" class="v-btn v-btn--primary">Back home</a></div>
+      <div><a id="empty-home" href="/" class="v-btn v-btn--primary" data-i18n="common.backHome">Back home</a></div>
     </section>
 
     <section id="view-card" hidden class="v-card v-review">
       <div class="grid gap-2">
-        <p class="v-review__dir">Write a sentence with this word</p>
+        <p class="v-review__dir" data-i18n="practice.prompt">Write a sentence with this word</p>
         <h1 id="word" class="v-review__word break-words"></h1>
         <p id="translations" class="review-typed"></p>
         <p id="hint" class="v-hint"></p>
@@ -36,18 +36,18 @@
 
       <form id="sentence-form" class="grid gap-4" autocomplete="off">
         <label>
-          <span class="sr-only">Your sentence</span>
-          <input id="sentence" type="text" lang="de" autocomplete="off" autocapitalize="sentences" spellcheck="false" class="v-input v-input--answer" />
+          <span class="sr-only" data-i18n="practice.yourSentence">Your sentence</span>
+          <input id="sentence" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="false" class="v-input v-input--answer" />
         </label>
         <p id="sentence-error" role="alert" hidden class="v-error"></p>
         <button id="submit" type="submit" aria-keyshortcuts="Enter" class="v-btn v-btn--primary v-btn--lg justify-center">
-          Check sentence <span class="v-key" aria-hidden="true">Enter</span>
+          <span data-i18n="practice.checkSentence">Check sentence</span> <span class="v-key" aria-hidden="true">Enter</span>
         </button>
       </form>
 
       <div id="checking" hidden class="grid gap-4">
-        <p id="checking-text" role="status" class="v-hint">Checking sentence</p>
-        <div><button id="skip" type="button" class="v-btn v-btn--secondary">Skip check</button></div>
+        <p id="checking-text" role="status" class="v-hint" data-i18n="practice.checking">Checking sentence</p>
+        <div><button id="skip" type="button" class="v-btn v-btn--secondary" data-i18n="practice.skipCheck">Skip check</button></div>
       </div>
 
       <div id="feedback" hidden tabindex="-1" class="grid gap-6 outline-none">
@@ -58,58 +58,58 @@
         </div>
         <ul id="issues" hidden class="grid gap-2 v-hint"></ul>
         <div id="corrected-block" hidden class="grid gap-1">
-          <h3 class="v-label">Corrected sentence</h3>
+          <h3 class="v-label" data-i18n="practice.corrected">Corrected sentence</h3>
           <p id="corrected" class="practice-sentence"></p>
         </div>
         <div id="example-block" hidden class="grid gap-1">
-          <h3 class="v-label">Example sentence</h3>
-          <p id="example-de" class="v-hint"></p>
-          <p id="example-en" class="v-hint"></p>
+          <h3 class="v-label" data-i18n="practice.example">Example sentence</h3>
+          <p id="example-target" class="v-hint"></p>
+          <p id="example-native" class="v-hint"></p>
         </div>
-        <div id="ratings" role="group" aria-label="Rating" class="v-rating">
+        <div id="ratings" role="group" aria-label="Rating" data-i18n-aria="common.rating" class="v-rating">
           <button type="button" data-rating="1" aria-pressed="false" aria-keyshortcuts="1" class="v-rate v-rate--again">
-            <span class="v-key" aria-hidden="true">1</span><span>Again</span><small></small>
+            <span class="v-key" aria-hidden="true">1</span><span data-i18n="common.rating.again">Again</span><small></small>
           </button>
           <button type="button" data-rating="2" aria-pressed="false" aria-keyshortcuts="2" class="v-rate v-rate--hard">
-            <span class="v-key" aria-hidden="true">2</span><span>Hard</span><small></small>
+            <span class="v-key" aria-hidden="true">2</span><span data-i18n="common.rating.hard">Hard</span><small></small>
           </button>
           <button type="button" data-rating="3" aria-pressed="false" aria-keyshortcuts="3" class="v-rate v-rate--good">
-            <span class="v-key" aria-hidden="true">3</span><span>Good</span><small></small>
+            <span class="v-key" aria-hidden="true">3</span><span data-i18n="common.rating.good">Good</span><small></small>
           </button>
           <button type="button" data-rating="4" aria-pressed="false" aria-keyshortcuts="4" class="v-rate v-rate--easy">
-            <span class="v-key" aria-hidden="true">4</span><span>Easy</span><small></small>
+            <span class="v-key" aria-hidden="true">4</span><span data-i18n="common.rating.easy">Easy</span><small></small>
           </button>
         </div>
         <div id="save-error" role="alert" hidden class="v-feedback v-feedback--again">
-          <p class="v-feedback__title">Could not save this attempt</p>
-          <div><button id="save-retry" type="button" class="v-btn v-btn--secondary">Retry</button></div>
+          <p class="v-feedback__title" data-i18n="practice.saveError">Could not save this attempt</p>
+          <div><button id="save-retry" type="button" class="v-btn v-btn--secondary" data-i18n="common.retry">Retry</button></div>
         </div>
         <button id="continue" type="button" aria-keyshortcuts="Enter" class="v-btn v-btn--primary v-btn--lg justify-center">
-          Save attempt <span class="v-key" aria-hidden="true">Enter</span>
+          <span data-i18n="practice.saveAttempt">Save attempt</span> <span class="v-key" aria-hidden="true">Enter</span>
         </button>
       </div>
     </section>
 
     <section id="view-summary" hidden class="v-card grid gap-6 p-8">
       <div class="grid gap-2">
-        <h2 class="page-title">Practice done</h2>
+        <h2 class="page-title" data-i18n="practice.done">Practice done</h2>
         <p id="sum-next" class="v-hint"></p>
       </div>
       <dl class="grid grid-cols-2 gap-3">
-        <div class="review-stat"><dt class="v-hint">Attempts</dt><dd id="sum-attempts" class="review-stat__num"></dd></div>
-        <div class="review-stat"><dt class="v-hint">Again or Hard</dt><dd id="sum-watch" class="review-stat__num"></dd></div>
+        <div class="review-stat"><dt class="v-hint" data-i18n="practice.attempts">Attempts</dt><dd id="sum-attempts" class="review-stat__num"></dd></div>
+        <div class="review-stat"><dt class="v-hint" data-i18n="practice.againOrHard">Again or Hard</dt><dd id="sum-watch" class="review-stat__num"></dd></div>
       </dl>
       <div class="flex flex-wrap gap-3">
-        <a id="summary-home" href="/" class="v-btn v-btn--primary">Back home</a>
+        <a id="summary-home" href="/" class="v-btn v-btn--primary" data-i18n="common.backHome">Back home</a>
       </div>
     </section>
   </main>
 
   <footer id="focus-foot" hidden class="focus-foot">
-    <span id="hint-submit" class="inline-flex items-center gap-2"><span class="v-key">Enter</span> Check sentence</span>
-    <span id="hint-rate" hidden class="inline-flex items-center gap-2"><span class="v-key">1</span> to <span class="v-key">4</span> Change rating</span>
-    <span id="hint-next" hidden class="inline-flex items-center gap-2"><span class="v-key">Enter</span> Save attempt</span>
-    <span class="inline-flex items-center gap-2"><span class="v-key">Esc</span> End session</span>
+    <span id="hint-submit" class="inline-flex items-center gap-2"><span class="v-key">Enter</span> <span data-i18n="practice.checkSentence">Check sentence</span></span>
+    <span id="hint-rate" hidden class="inline-flex items-center gap-2"><span class="v-key">1</span> <span data-i18n="common.keyTo">to</span> <span class="v-key">4</span> <span data-i18n="common.changeRating">Change rating</span></span>
+    <span id="hint-next" hidden class="inline-flex items-center gap-2"><span class="v-key">Enter</span> <span data-i18n="practice.saveAttempt">Save attempt</span></span>
+    <span class="inline-flex items-center gap-2"><span class="v-key">Esc</span> <span data-i18n="common.endSession">End session</span></span>
   </footer>
 </div>
 <script type="module">

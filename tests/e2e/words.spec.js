@@ -14,9 +14,12 @@ test('first sign-in shows Setup, and Setup never shows again', async ({ page }) 
   await signInAs(page, 'alice@test.local', 'password123');
 
   await expect(page).toHaveURL(/\/setup\.html$/);
+  await page.locator('#native-lang').selectOption('en');
+  await page.locator('#target-lang').selectOption('de');
   await page.getByRole('button', { name: 'Start learning' }).click();
   await expect(page).toHaveURL('/');
   await expect(page.getByText('No words yet')).toBeVisible();
+  await expect(page.locator('#empty-hint')).toHaveText('Add your first German word to start reviewing.');
 
   await page.goto('/setup.html');
   await expect(page).toHaveURL('/');
@@ -94,10 +97,10 @@ test('word page: open from a row, back, edit stays, not found', async ({ page })
   const bank = await seedWord(admin, ALICE_ID, pair.id, {
     term: 'Bank',
     forms: { article: 'die' },
-    hint_en: 'bank (money)',
+    hint_native: 'bank (money)',
     translations: ['bank'],
-    example_de: 'Die Bank ist <b>offen</b>.',
-    example_en: 'The bank is open.',
+    example_target: 'Die Bank ist <b>offen</b>.',
+    example_native: 'The bank is open.',
   });
   const gone = await seedWord(admin, ALICE_ID, pair.id, { term: 'Baum', translations: ['tree'] });
   await admin.from('words').update({ deleted_at: new Date().toISOString() }).eq('id', gone.id);
@@ -115,8 +118,8 @@ test('word page: open from a row, back, edit stays, not found', async ({ page })
   await expect(page.getByText('bank (money)')).toBeVisible();
   await expect(page.locator('#pos')).toHaveText('noun');
   await expect(page.locator('#translations')).toHaveText('bank');
-  await expect(page.locator('#example-de')).toHaveText('Die Bank ist <b>offen</b>.');
-  await expect(page.locator('#example-de b')).toHaveCount(0);
+  await expect(page.locator('#example-target')).toHaveText('Die Bank ist <b>offen</b>.');
+  await expect(page.locator('#example-target b')).toHaveCount(0);
   await expect(page.getByText('The bank is open.')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Words', exact: true })).toHaveAttribute('aria-current', 'page');
 

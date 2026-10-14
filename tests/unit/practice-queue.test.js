@@ -16,7 +16,7 @@ const card = (over = {}) => {
     word_id: `w${seq}`,
     state: 'review',
     due: ago(DAY),
-    deEnState: 'review',
+    forwardState: 'review',
     word: { deleted_at: null, created_at: ago(30 * DAY - seq * 1000) },
     ...over,
   };
@@ -56,8 +56,8 @@ describe('due order', () => {
 });
 
 describe('eligibility', () => {
-  it.each(['new', 'learning', 'relearning'])('keeps a new card out while the de_en card is %s', (deEnState) => {
-    expect(run([fresh({ deEnState })])).toEqual([]);
+  it.each(['new', 'learning', 'relearning'])('keeps a new card out while the forward card is %s', (forwardState) => {
+    expect(run([fresh({ forwardState })])).toEqual([]);
   });
 
   it('excludes cards of deleted words', () => {
@@ -137,6 +137,6 @@ describe('practiceStatus', () => {
   });
 
   it('has no next time for a new card that is not eligible yet', () => {
-    expect(status([fresh({ deEnState: 'learning' })]).nextAvailable).toBeNull();
+    expect(status([fresh({ forwardState: 'learning' })]).nextAvailable).toBeNull();
   });
 });

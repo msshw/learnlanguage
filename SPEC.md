@@ -9,6 +9,7 @@ The MVP is a desk-first web app for learning a language from your own: add words
 | Decision | Choice |
 | --- | --- |
 | Language pairs | Native English or Russian; targets from one list (German, French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Ukrainian, Russian, English), each offered once its AI quality set passes. Several pairs per account, one active at a time |
+| Interface language | Follows the active pair's native language (English or Russian, English fallback); sign-in uses the browser language. Admin pages and edge function errors stay English |
 | MVP features | Add words + review loop; AI auto-fill when adding a word |
 | Next milestone | None specced; candidates are listed under "After the MVP" (§8) |
 | Out of MVP | Audio/pronunciation, import (Anki, CSV), gamification, stats dashboard, AI-generated example sentences |
@@ -77,7 +78,7 @@ Each word produces two cards, forward (target shown, native typed) and reverse (
 | Word or phrase in the target language | All | Yes | Yes |
 | Translation(s) in the native language | All | At least one | Yes |
 | Part of speech | All | Yes (AI suggests) | No; decides which fields apply |
-| Article (der/die/das) | Nouns | Yes | Yes, in EN→DE |
+| Article (der/die/das) | Nouns | Yes | Yes, on reverse cards (languages with articles) |
 | Plural | Nouns | No | Shown with answer |
 | Präteritum, Partizip II, auxiliary (haben/sein), separable prefix | Verbs | No | Shown with answer |
 | Example sentence + translation (`example_target`, `example_native`) | All | No | Shown with answer |
@@ -90,7 +91,7 @@ Before comparing, answers are normalized: Unicode NFC, trimmed, case-insensitive
 
 | Result | Rule | Default rating |
 | --- | --- | --- |
-| Correct | Matches after normalization; in DE→EN, any listed translation counts | Good |
+| Correct | Matches after normalization; on forward cards, any listed translation counts | Good |
 | Typo | One letter off (edit distance 1), words of 4+ letters only; typo is shown | Good |
 | Article wrong | Noun correct, article wrong or missing | Hard |
 | Wrong | Anything else | Again |
